@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon Nouveau Site</title>
+  <style>
+    /* Réinitialisation et styles de base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+    }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: #333;
+      color: #fff;
+      z-index: 1000;
+    }
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 10px 20px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+    .logo img {
+      height: 40px;
+      margin-right: 10px;
+    }
+    .logo span {
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+    .nav-menu {
+      list-style: none;
+      display: flex;
+    }
+    .nav-menu li {
+      margin-left: 20px;
+    }
+    .nav-menu li a {
+      color: #fff;
+      padding: 5px 10px;
+      transition: background 0.3s ease;
+    }
+    .nav-menu li a:hover {
+      background: #f39c12;
+    }
+    /* Menu hamburger pour mobile */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+    }
+    .hamburger span {
+      height: 3px;
+      width: 25px;
+      background: #fff;
+      margin: 4px 0;
+    }
+
+    /* Section Hero */
+    header {
+      background: url('https://via.placeholder.com/1920x600') no-repeat center center/cover;
+      height: 600px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      color: #fff;
+    }
+    header::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+    }
+    .hero-content {
+      position: relative;
+      text-align: center;
+      z-index: 1;
+    }
+    .hero-content h1 {
+      font-size: 3em;
+      margin-bottom: 20px;
+    }
+    .hero-content p {
+      font-size: 1.2em;
+    }
+
+    /* Sections générales */
+    section {
+      padding: 80px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    section h2 {
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+    }
+    section h2::after {
+      content: "";
+      width: 60px;
+      height: 3px;
+      background: #f39c12;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -10px;
+    }
+
+    /* Services */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .service-item {
+      background: #f4f4f4;
+      padding: 20px;
+      border-radius: 5px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+    .service-item:hover {
+      transform: translateY(-5px);
+    }
+    .service-item h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .service-item p {
+      font-size: 0.9em;
+      color: #666;
+    }
+
+    /* Contact */
+    .contact-form {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #f4f4f4;
+      padding: 30px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .contact-form input,
+    .contact-form textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+    .contact-form button {
+      background: #f39c12;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .contact-form button:hover {
+      background: #e67e22;
+    }
+
+    /* Footer */
+    footer {
+      background: #333;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-menu {
+        flex-direction: column;
+        background: #333;
+        position: absolute;
+        top: 60px;
+        right: 0;
+        width: 200px;
+        display: none;
+      }
+      .nav-menu.active {
+        display: flex;
+      }
+      .nav-menu li {
+        margin: 10px 0;
+      }
+      .hamburger {
+        display: flex;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-container">
+      <div class="logo">
+        <!-- Remplacez "mon_logo.png" par le chemin vers votre logo -->
+        <img src="mon_logo.png" alt="Mon Logo">
+        <span>MonSite</span>
+      </div>
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <ul class="nav-menu" id="nav-menu">
+        <li><a href="#accueil">Accueil</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#extra-services">Services Extra</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Section Hero -->
+  <header id="accueil">
+    <div class="hero-content">
+      <h1>Bienvenue sur MonSite</h1>
+      <p>Découvrez nos solutions innovantes et nos services sur mesure.</p>
+    </div>
+  </header>
+
+  <!-- Section Services de Base -->
+  <section id="services">
+    <h2>Nos Services</h2>
+    <div class="services-grid">
+      <div class="service-item">
+        <h3>Développement Web</h3>
+        <p>Création de sites web modernes et performants.</p>
+      </div>
+      <div class="service-item">
+        <h3>Design Graphique</h3>
+        <p>Conception d'identités visuelles et d'interfaces attractives.</p>
+      </div>
+      <div class="service-item">
+        <h3>Marketing Digital</h3>
+        <p>Stratégies de communication pour booster votre visibilité.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Services Extra -->
+  <section id="extra-services">
+    <h2>Services Extra</h2>
+    <div class="services-grid">
+      <div class="service-item">
+        <h3>SEO & Référencement</h3>
+        <p>Optimisez votre site pour une meilleure visibilité sur les moteurs de recherche.</p>
+      </div>
+      <div class="service-item">
+        <h3>Consulting IT</h3>
+        <p>Accompagnement stratégique pour vos projets technologiques.</p>
+      </div>
+      <div class="service-item">
+        <h3>Support Technique</h3>
+        <p>Assistance et maintenance pour garantir la performance de vos solutions.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Contact -->
+  <section id="contact">
+    <h2>Contactez-nous</h2>
+    <div class="contact-form">
+      <form id="contactForm">
+        <input type="text" id="name" name="name" placeholder="Votre nom" required>
+        <input type="email" id="email" name="email" placeholder="Votre email" required>
+        <textarea id="message" name="message" rows="5" placeholder="Votre message" required></textarea>
+        <button type="submit">Envoyer</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 MonSite. Tous droits réservés.</p>
+  </footer>
+
+  <script>
+    // Gestion du menu hamburger pour mobile
+    const hamburger = document.getElementById('hamburger');
+    const navMenu = document.getElementById('nav-menu');
+    hamburger.addEventListener('click', () => {
+      navMenu.classList.toggle('active');
+    });
+
+    // Scroll fluide lors du clic sur un lien de navigation
+    const navLinks = document.querySelectorAll('.nav-menu a');
+    navLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href').substring(1);
+        const targetSection = document.getElementById(targetId);
+        window.scrollTo({
+          top: targetSection.offsetTop - 60,
+          behavior: 'smooth'
+        });
+        // Ferme le menu sur mobile après clic
+        if (navMenu.classList.contains('active')) {
+          navMenu.classList.remove('active');
+        }
+      });
+    });
+
+    // Validation et envoi simulé du formulaire de contact
+    const contactForm = document.getElementById('contactForm');
+    contactForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const message = document.getElementById('message').value.trim();
+      if(name === '' || email === '' || message === '') {
+        alert('Veuillez remplir tous les champs.');
+        return;
+      }
+      alert('Merci ' + name + ', votre message a bien été envoyé !');
+      contactForm.reset();
+    });
+  </script>
+</body>
+</html>
