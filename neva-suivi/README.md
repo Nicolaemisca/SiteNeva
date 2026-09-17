@@ -1,8 +1,29 @@
 # Neva Energy — Suivi des heures et de l'avancement chantier
 
 Phase 1 du cahier des charges : schéma PostgreSQL, RLS, authentification
-Supabase à deux rôles. Les phases suivantes (écran de saisie, back-office,
-GPS, forfait, hors-ligne) ne sont pas encore implémentées.
+Supabase à deux rôles.
+
+Phase 2 : écran de saisie (`/saisie`, destination par défaut après
+connexion) — date, chantier, heures, description, matériel. Doublon
+(même technicien/chantier/date) signalé mais jamais bloqué (cahier §7).
+Pas encore de gestion des forfaits sur cet écran : ce sera une phase
+suivante, avec le mode hors-ligne.
+
+Phase 3 : back-office admin (`/admin`, réservé au rôle admin) —
+création/modification des chantiers avec géocodage automatique de
+l'adresse (Nominatim/OpenStreetMap, GPS jamais saisi à la main),
+consultation de toutes les saisies filtrable par chantier/personne/
+période avec total d'heures, et export Excel des lignes filtrées.
+
+Phase 4 : tri des chantiers par distance GPS sur l'écran de saisie
+(`SelectChantier`) — le chantier proposé en premier est le plus proche de
+la position du téléphone. Amélioration progressive côté client
+uniquement : le select est utilisable dès le rendu dans l'ordre
+alphabétique (déjà celui renvoyé par le serveur) et ne se retrie que si
+la géolocalisation aboutit avec une position plausible (bornes valides,
+ni "null island" à (0,0), ni précision au-delà de 50 km) ; indisponible,
+refusée ou aberrante, elle ne bloque jamais la saisie et l'ordre reste
+alphabétique.
 
 ## Mise en place
 
@@ -32,8 +53,9 @@ GPS, forfait, hors-ligne) ne sont pas encore implémentées.
    npm run dev
    ```
    Se connecter sur `/login` avec un des comptes créés : la page d'accueil
-   affiche le nom et le rôle lus depuis `public.users`, ce qui valide que le
-   schéma, les policies RLS et l'authentification fonctionnent ensemble.
+   redirige vers `/saisie`, qui affiche le nom lu depuis `public.users` et
+   liste les chantiers actifs — ce qui valide que le schéma, les policies
+   RLS et l'authentification fonctionnent ensemble.
 
 ## Décisions de schéma (résumé)
 
