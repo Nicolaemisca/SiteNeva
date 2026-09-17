@@ -18,6 +18,10 @@ export default async function LoginPage({
     minHeight: 42,
     padding: "0.55rem 0.75rem",
     fontSize: "1rem",
+    // Le conteneur désactive la sélection de texte (cf. plus bas) : la
+    // réactiver explicitement ici pour que les champs restent éditables.
+    WebkitUserSelect: "text" as const,
+    userSelect: "text" as const,
   };
 
   return (
@@ -25,9 +29,17 @@ export default async function LoginPage({
       style={{
         maxWidth: 380,
         margin: "3rem auto",
-        padding: "0 1rem",
+        paddingLeft: "1.5rem",
+        paddingRight: "1rem",
         fontFamily: "sans-serif",
         color: couleurs.texte,
+        // Empêche la sélection de texte au doigt : sans ça, un geste pour
+        // faire défiler la page qui frôle un mot le sélectionne au lieu de
+        // scroller, donnant l'impression que le texte "bouge". Les champs de
+        // saisie restent éditables : ceci ne s'applique qu'au texte
+        // décoratif (titre, libellés, messages), pas à ce qu'on tape.
+        WebkitUserSelect: "none",
+        userSelect: "none",
       }}
     >
       <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
