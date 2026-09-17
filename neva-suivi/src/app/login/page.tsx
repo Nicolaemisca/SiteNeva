@@ -1,4 +1,5 @@
 import { sendMagicLink, signInWithPassword } from "@/app/actions/auth";
+import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { Logo } from "@/components/Logo";
 import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
 
@@ -78,9 +79,9 @@ export default async function LoginPage({
             style={styleChampConnexion}
           />
         </label>
-        <button type="submit" style={{ ...styleBoutonPrimaire, marginTop: "0.25rem" }}>
+        <BoutonEnvoi style={{ ...styleBoutonPrimaire, marginTop: "0.25rem" }} texteEnCours="Connexion…">
           Se connecter
-        </button>
+        </BoutonEnvoi>
       </form>
 
       <form action={sendMagicLink} style={{ display: "grid", gap: "0.75rem", marginTop: "2rem" }}>
@@ -88,9 +89,9 @@ export default async function LoginPage({
           <span>Email (lien magique)</span>
           <input name="email" type="email" autoComplete="email" required style={styleChampConnexion} />
         </label>
-        <button type="submit" style={styleBoutonSecondaire}>
+        <BoutonEnvoi style={styleBoutonSecondaire} texteEnCours="Envoi…">
           Recevoir un lien de connexion
-        </button>
+        </BoutonEnvoi>
       </form>
     </main>
   );

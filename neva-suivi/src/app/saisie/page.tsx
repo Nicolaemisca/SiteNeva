@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { creerSaisie } from "@/app/actions/saisies";
 import { signOut } from "@/app/actions/auth";
+import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { Logo } from "@/components/Logo";
 import { dateDuJourBelge } from "@/lib/date";
 import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
@@ -172,9 +173,9 @@ export default async function SaisiePage({
             <input type="hidden" name="description" value={description} />
             <input type="hidden" name="materiel" value={materiel} />
             <input type="hidden" name="confirmer_doublon" value="1" />
-            <button type="submit" style={styleBoutonSecondaire}>
+            <BoutonEnvoi style={styleBoutonSecondaire} texteEnCours="Envoi…">
               Confirmer quand même
-            </button>
+            </BoutonEnvoi>
           </form>
         </div>
       )}
@@ -218,9 +219,9 @@ export default async function SaisiePage({
           <input name="materiel" type="text" defaultValue={materiel} style={styleChamp} />
         </label>
 
-        <button type="submit" style={styleBoutonPrimaire}>
+        <BoutonEnvoi style={styleBoutonPrimaire} texteEnCours="Enregistrement…">
           Enregistrer
-        </button>
+        </BoutonEnvoi>
       </form>
     </main>
   );
