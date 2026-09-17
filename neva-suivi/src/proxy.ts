@@ -45,5 +45,11 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.json).*)"],
+  // logo.png/icon*.png/apple-icon.png/manifest.webmanifest doivent rester
+  // accessibles sans session : le logo doit s'afficher sur /login lui-même,
+  // et le manifest/les icônes sont récupérés par le navigateur/l'OS (favicon,
+  // "ajouter à l'écran d'accueil") sans cookie d'authentification.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|manifest.json|manifest.webmanifest|logo.png|icon.png|apple-icon.png|icon-192.png|icon-512.png).*)",
+  ],
 };
