@@ -21,7 +21,7 @@ const supabase = createClient(url, serviceRoleKey, {
 // réinitialise jamais le mot de passe d'un compte existant.
 const comptes = [
   { email: "info@neva-energy.be", nom: "Nicolae (pro)", role: "admin", motDePasseTemporaire: "ChangeMoi123!" },
-  { email: "TON-EMAIL-PRIVE@exemple.be", nom: "Nicolae (perso)", role: "technicien", motDePasseTemporaire: "ChangeMoi123!" },
+  { email: "nicolas89m@yahoo.com", nom: "Nicolae (perso)", role: "technicien", motDePasseTemporaire: "ChangeMoi123!" },
 ];
 
 async function trouverUtilisateurParEmail(email) {
