@@ -1,0 +1,55 @@
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
+
+// Rafraîchit la session Supabase à chaque requête et protège les routes qui
+// ne sont pas /login ou /auth/callback. Sans ce proxy, une session expirée
+// resterait invisible côté Server Components jusqu'au prochain appel client —
+// on redirige donc ici, avant le rendu.
+export async function proxy(request: NextRequest) {
+  let response = NextResponse.next({ request });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          response = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const isPublicRoute =
+    request.nextUrl.pathname.startsWith("/login") ||
+    request.nextUrl.pathname.startsWith("/auth/callback");
+
+  if (!user && !isPublicRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  return response;
+}
+
+export const config = {
+  // logo.png/icon*.png/apple-icon.png/manifest.webmanifest doivent rester
+  // accessibles sans session : le logo doit s'afficher sur /login lui-même,
+  // et le manifest/les icônes sont récupérés par le navigateur/l'OS (favicon,
+  // "ajouter à l'écran d'accueil") sans cookie d'authentification.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|manifest.json|manifest.webmanifest|logo.png|icon.png|apple-icon.png|icon-192.png|icon-512.png).*)",
+  ],
+};
