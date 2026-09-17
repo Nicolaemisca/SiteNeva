@@ -1,7 +1,7 @@
-// Crée les 4 comptes (1 admin + 3 techniciens). À lancer une seule fois,
-// en local, avec SUPABASE_SERVICE_ROLE_KEY dans .env.local (jamais commité,
-// jamais utilisé côté client). Pas d'inscription libre (cahier §2) : c'est
-// la seule voie de création de compte.
+// Crée ou met à jour les comptes (cahier §2 : pas d'inscription libre, c'est
+// la seule voie de création). Idempotent : relancer ce script pour ajouter
+// un associé n'échoue pas sur les comptes déjà créés — un compte existant
+// est retrouvé par email, jamais recréé ni redéfini son mot de passe.
 import { createClient } from "@supabase/supabase-js";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,16 +16,25 @@ const supabase = createClient(url, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-// Adapter cette liste : emails réels, rôle 'admin' pour le gérant. Le mot
-// de passe temporaire doit être changé à la première connexion.
+// Ajouter une ligne par associé pour les prochains lancements. Le mot de
+// passe temporaire n'est utilisé qu'à la création : relancer le script ne
+// réinitialise jamais le mot de passe d'un compte existant.
 const comptes = [
-  { email: "gerant@neva-energy.be", nom: "Gérant", role: "admin", motDePasseTemporaire: "ChangeMoi123!" },
-  { email: "technicien1@neva-energy.be", nom: "Technicien 1", role: "technicien", motDePasseTemporaire: "ChangeMoi123!" },
-  { email: "technicien2@neva-energy.be", nom: "Technicien 2", role: "technicien", motDePasseTemporaire: "ChangeMoi123!" },
-  { email: "technicien3@neva-energy.be", nom: "Technicien 3", role: "technicien", motDePasseTemporaire: "ChangeMoi123!" },
+  { email: "info@neva-energy.be", nom: "Nicolae (pro)", role: "admin", motDePasseTemporaire: "ChangeMoi123!" },
+  { email: "TON-EMAIL-PRIVE@exemple.be", nom: "Nicolae (perso)", role: "technicien", motDePasseTemporaire: "ChangeMoi123!" },
 ];
 
+async function trouverUtilisateurParEmail(email) {
+  // L'API Admin ne propose pas de recherche par email : à ce volume de
+  // comptes (quelques associés), lister et filtrer reste largement suffisant.
+  const { data, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+  if (error) throw error;
+  return data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase()) ?? null;
+}
+
 for (const compte of comptes) {
+  let userId;
+
   const { data, error } = await supabase.auth.admin.createUser({
     email: compte.email,
     password: compte.motDePasseTemporaire,
@@ -34,23 +43,39 @@ for (const compte of comptes) {
   });
 
   if (error) {
-    console.error(`Échec création ${compte.email} :`, error.message);
+    // Compte déjà créé lors d'un lancement précédent : ce n'est pas une
+    // erreur, on récupère juste son id pour synchroniser le rôle.
+    const dejaExistant = /already.*registered|already.*exists/i.test(error.message);
+    if (!dejaExistant) {
+      console.error(`Échec création ${compte.email} :`, error.message);
+      continue;
+    }
+
+    const existant = await trouverUtilisateurParEmail(compte.email);
+    if (!existant) {
+      console.error(`${compte.email} annoncé existant par l'API mais introuvable, à vérifier manuellement.`);
+      continue;
+    }
+    userId = existant.id;
+    console.log(`Compte déjà existant : ${compte.email} (inchangé)`);
+  } else {
+    userId = data.user.id;
+    console.log(`Compte créé : ${compte.email}`);
+  }
+
+  // Le trigger on_auth_user_created crée la ligne public.users avec
+  // role='technicien' par défaut à la création ; on aligne toujours le rôle
+  // ici, y compris sur un compte déjà existant (relancer le script après
+  // avoir changé un rôle dans cette liste doit le refléter en base).
+  const { error: updateError } = await supabase
+    .from("users")
+    .update({ role: compte.role })
+    .eq("id", userId);
+
+  if (updateError) {
+    console.error(`Échec synchronisation du rôle pour ${compte.email} :`, updateError.message);
     continue;
   }
 
-  // Le trigger on_auth_user_created a déjà créé la ligne public.users avec
-  // role='technicien' par défaut ; on l'élève à 'admin' si nécessaire.
-  if (compte.role === "admin") {
-    const { error: updateError } = await supabase
-      .from("users")
-      .update({ role: "admin" })
-      .eq("id", data.user.id);
-
-    if (updateError) {
-      console.error(`Échec passage en admin de ${compte.email} :`, updateError.message);
-      continue;
-    }
-  }
-
-  console.log(`Compte créé : ${compte.email} (${compte.role})`);
+  console.log(`Rôle synchronisé : ${compte.email} -> ${compte.role}`);
 }
