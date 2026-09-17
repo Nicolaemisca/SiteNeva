@@ -38,7 +38,18 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </form>
         </div>
       </header>
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "1.5rem 1rem" }}>{children}</div>
+      <div
+        style={{
+          maxWidth: 900,
+          margin: "0 auto",
+          paddingTop: "1.5rem",
+          paddingBottom: "1.5rem",
+          paddingLeft: "1.5rem",
+          paddingRight: "1rem",
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }

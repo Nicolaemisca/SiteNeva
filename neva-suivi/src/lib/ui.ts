@@ -39,6 +39,10 @@ export const styleChamp: CSSProperties = {
   color: couleurs.texte,
   background: couleurs.fond,
   width: "100%",
+  // Le <body> désactive la sélection de texte globalement (layout.tsx) :
+  // la réactiver ici pour que tous les champs restent éditables/sélectionnables.
+  WebkitUserSelect: "text",
+  userSelect: "text",
 };
 
 export const styleBoutonPrimaire: CSSProperties = {

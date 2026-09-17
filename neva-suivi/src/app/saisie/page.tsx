@@ -52,7 +52,10 @@ export default async function SaisiePage({
       style={{
         maxWidth: 480,
         margin: "0 auto",
-        padding: "1rem 1rem 3rem",
+        paddingTop: "1rem",
+        paddingBottom: "3rem",
+        paddingLeft: "1.5rem",
+        paddingRight: "1rem",
         fontFamily: "sans-serif",
         color: couleurs.texte,
         background: couleurs.fond,

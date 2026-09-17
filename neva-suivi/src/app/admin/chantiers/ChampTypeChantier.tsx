@@ -1,15 +1,7 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
-
-const styleChamp: CSSProperties = {
-  fontSize: "1.1rem",
-  padding: "0.75rem",
-  minHeight: 44,
-  borderRadius: 8,
-  border: "1px solid #ccc",
-  width: "100%",
-};
+import { useState } from "react";
+import { styleChamp } from "@/lib/ui";
 
 // Le budget d'heures n'a de sens qu'au forfait (contrainte DB
 // budget_heures_seulement_si_forfait) : masqué plutôt que simplement

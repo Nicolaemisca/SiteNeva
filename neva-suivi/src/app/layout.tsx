@@ -11,7 +11,12 @@ export const viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr">
-      <body>{children}</body>
+      {/* Empêche la sélection de texte au doigt sur tout le site : sans ça,
+          un geste de scroll qui frôle un mot le sélectionne au lieu de faire
+          défiler la page (donne l'impression que le texte "bouge"). Les
+          champs de saisie redeviennent explicitement sélectionnables via
+          styleChamp (src/lib/ui.ts), sinon ils resteraient inutilisables. */}
+      <body style={{ WebkitUserSelect: "none", userSelect: "none" }}>{children}</body>
     </html>
   );
 }

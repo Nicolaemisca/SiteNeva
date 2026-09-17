@@ -1,14 +1,6 @@
 import { creerChantier } from "@/app/actions/chantiers";
+import { styleChamp } from "@/lib/ui";
 import { ChampTypeChantier } from "../ChampTypeChantier";
-
-const styleChamp = {
-  fontSize: "1.1rem",
-  padding: "0.75rem",
-  minHeight: 44,
-  borderRadius: 8,
-  border: "1px solid #ccc",
-  width: "100%",
-} as const;
 
 export default async function NouveauChantierPage({
   searchParams,

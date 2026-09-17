@@ -5,6 +5,10 @@ const styleChamp = {
   padding: "0.5rem",
   borderRadius: 6,
   border: "1px solid #ccc",
+  // Le <body> désactive la sélection de texte globalement (layout.tsx) :
+  // la réactiver ici pour que ces champs de filtre restent utilisables.
+  WebkitUserSelect: "text",
+  userSelect: "text",
 } as const;
 
 const styleTh = { textAlign: "left", padding: "0.5rem", borderBottom: "2px solid #ddd" } as const;
