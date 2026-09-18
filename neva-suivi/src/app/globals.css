@@ -1,0 +1,60 @@
+/* Feuille minimale : uniquement les états (hover/focus/press) et
+   transitions que les styles inline React ne peuvent pas exprimer
+   (pseudo-classes). L'identité visuelle elle-même (couleurs, tailles)
+   reste dans src/lib/ui.ts. */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.1s ease;
+}
+
+button:not(:disabled):active,
+a:active {
+  transform: scale(0.97);
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* #0c2551 = couleurs.primaire (src/lib/ui.ts) — dupliqué ici car le CSS ne
+   peut pas importer une constante JS ; garder synchronisé si la couleur change. */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #0c2551;
+  outline-offset: 2px;
+}
+
+@keyframes apparition-douce {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.apparition-douce {
+  animation: apparition-douce 0.25s ease-out;
+}

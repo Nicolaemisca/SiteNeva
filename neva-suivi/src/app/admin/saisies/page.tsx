@@ -1,18 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
+import { couleurs, styleBoutonPrimaire } from "@/lib/ui";
 
 const styleChamp = {
   fontSize: "1rem",
   padding: "0.5rem",
   borderRadius: 6,
-  border: "1px solid #ccc",
+  border: `1px solid ${couleurs.bordure}`,
   // Le <body> désactive la sélection de texte globalement (layout.tsx) :
   // la réactiver ici pour que ces champs de filtre restent utilisables.
   WebkitUserSelect: "text",
   userSelect: "text",
 } as const;
 
-const styleTh = { textAlign: "left", padding: "0.5rem", borderBottom: "2px solid #ddd" } as const;
-const styleTd = { padding: "0.5rem", borderBottom: "1px solid #eee" } as const;
+const styleTh = { textAlign: "left", padding: "0.5rem", borderBottom: `2px solid ${couleurs.bordure}` } as const;
+const styleTd = { padding: "0.5rem", borderBottom: "1px solid #e2e2e2" } as const;
 
 type LigneSaisie = {
   id: string;
@@ -107,19 +108,17 @@ export default async function SaisiesAdminPage({
 
         <a
           href={`/admin/export${requeteExport ? `?${requeteExport}` : ""}`}
-          style={{
-            ...styleChamp,
-            textDecoration: "none",
-            background: "#0a5a9c",
-            color: "#fff",
-            borderColor: "#0a5a9c",
-          }}
+          style={{ ...styleBoutonPrimaire, fontSize: "1rem", padding: "0.6rem 1rem", minHeight: 40, textDecoration: "none" }}
         >
           Exporter Excel
         </a>
       </form>
 
-      {error && <p style={{ color: "#b00020" }}>{error.message}</p>}
+      {error && (
+        <p style={{ color: couleurs.erreur, background: couleurs.erreurFond, border: `1.5px solid ${couleurs.erreur}`, borderRadius: 8, padding: "0.75rem" }}>
+          {error.message}
+        </p>
+      )}
 
       <p>
         <strong>Total : {totalHeures.toFixed(2)} h</strong> ({saisies.length} saisie

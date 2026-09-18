@@ -1,5 +1,5 @@
 import { creerChantier } from "@/app/actions/chantiers";
-import { styleChamp } from "@/lib/ui";
+import { couleurs, styleBoutonPrimaire, styleChamp } from "@/lib/ui";
 import { ChampTypeChantier } from "../ChampTypeChantier";
 
 export default async function NouveauChantierPage({
@@ -13,7 +13,11 @@ export default async function NouveauChantierPage({
     <main style={{ maxWidth: 480 }}>
       <h1 style={{ fontSize: "1.1rem" }}>Nouveau chantier</h1>
 
-      {params.erreur && <p style={{ color: "#b00020" }}>{params.erreur}</p>}
+      {params.erreur && (
+        <p style={{ color: couleurs.erreur, background: couleurs.erreurFond, border: `1.5px solid ${couleurs.erreur}`, borderRadius: 8, padding: "0.75rem" }}>
+          {params.erreur}
+        </p>
+      )}
 
       <form action={creerChantier} style={{ display: "grid", gap: "1.25rem", marginTop: "1rem" }}>
         <label style={{ display: "grid", gap: "0.25rem" }}>
@@ -29,7 +33,7 @@ export default async function NouveauChantierPage({
         <label style={{ display: "grid", gap: "0.25rem" }}>
           <span>Adresse</span>
           <input name="adresse" type="text" defaultValue={params.adresse} style={styleChamp} />
-          <span style={{ fontSize: "0.8rem", color: "#666" }}>
+          <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>
             Les coordonnées GPS sont déduites automatiquement de l&apos;adresse.
           </span>
         </label>
@@ -41,19 +45,7 @@ export default async function NouveauChantierPage({
 
         <input type="hidden" name="statut" value="actif" />
 
-        <button
-          type="submit"
-          style={{
-            fontSize: "1.1rem",
-            fontWeight: "bold",
-            padding: "1rem",
-            minHeight: 48,
-            borderRadius: 8,
-            border: "none",
-            background: "#0a5a9c",
-            color: "#fff",
-          }}
-        >
+        <button type="submit" style={styleBoutonPrimaire}>
           Créer le chantier
         </button>
       </form>

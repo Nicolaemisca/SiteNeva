@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { signOut } from "@/app/actions/auth";
+import { couleurs, styleBoutonSecondaire } from "@/lib/ui";
 
 // Garde d'accès unique pour tout /admin/* : les pages filles n'ont plus à
 // revérifier le rôle, seulement le layout (rendu avant elles dans le même
@@ -20,19 +21,37 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           alignItems: "center",
           flexWrap: "wrap",
           gap: "0.75rem",
-          padding: "1rem",
-          borderBottom: "1px solid #ddd",
+          padding: "1rem 1rem 1rem 1.5rem",
+          borderBottom: `1.5px solid ${couleurs.bordure}`,
         }}
       >
-        <nav style={{ display: "flex", gap: "1rem" }}>
-          <Link href="/admin/chantiers">Chantiers</Link>
-          <Link href="/admin/saisies">Saisies</Link>
-          <Link href="/saisie">Ma saisie</Link>
+        <nav style={{ display: "flex", gap: "0.5rem" }}>
+          <Link href="/admin/chantiers" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
+            Chantiers
+          </Link>
+          <Link href="/admin/saisies" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
+            Saisies
+          </Link>
+          <Link href="/saisie" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
+            Ma saisie
+          </Link>
         </nav>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <span style={{ fontSize: "0.9rem", color: "#555" }}>{profil.nom}</span>
+          <span style={{ fontSize: "0.9rem", color: couleurs.texteAttenue }}>{profil.nom}</span>
           <form action={signOut}>
-            <button type="submit" style={{ fontSize: "0.85rem" }}>
+            <button
+              type="submit"
+              style={{
+                fontSize: "0.85rem",
+                fontWeight: 600,
+                minHeight: 40,
+                padding: "0.5rem 0.85rem",
+                borderRadius: 8,
+                border: `1.5px solid ${couleurs.bordure}`,
+                background: couleurs.fond,
+                color: couleurs.texte,
+              }}
+            >
               Déconnexion
             </button>
           </form>

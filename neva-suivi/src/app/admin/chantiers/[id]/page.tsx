@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { modifierChantier } from "@/app/actions/chantiers";
-import { styleChamp } from "@/lib/ui";
+import { couleurs, styleBoutonPrimaire, styleChamp } from "@/lib/ui";
 import { ChampTypeChantier } from "../ChampTypeChantier";
 
 export default async function ChantierAdminPage({
@@ -36,10 +36,21 @@ export default async function ChantierAdminPage({
     <main style={{ maxWidth: 480 }}>
       <h1 style={{ fontSize: "1.1rem" }}>Modifier le chantier</h1>
 
-      {query.cree && <p style={{ color: "#0a7a0a" }}>Chantier créé.</p>}
-      {query.modifie && <p style={{ color: "#0a7a0a" }}>Chantier mis à jour.</p>}
-      {query.avertissement && <p style={{ color: "#d99a00" }}>{query.avertissement}</p>}
-      {query.erreur && <p style={{ color: "#b00020" }}>{query.erreur}</p>}
+      {(query.cree || query.modifie) && (
+        <p style={{ color: couleurs.succes, background: couleurs.succesFond, border: `1.5px solid ${couleurs.succes}`, borderRadius: 8, padding: "0.75rem", fontWeight: 600 }}>
+          {query.cree ? "Chantier créé." : "Chantier mis à jour."}
+        </p>
+      )}
+      {query.avertissement && (
+        <p style={{ color: couleurs.avertissement, background: couleurs.avertissementFond, border: `1.5px solid ${couleurs.avertissement}`, borderRadius: 8, padding: "0.75rem" }}>
+          {query.avertissement}
+        </p>
+      )}
+      {query.erreur && (
+        <p style={{ color: couleurs.erreur, background: couleurs.erreurFond, border: `1.5px solid ${couleurs.erreur}`, borderRadius: 8, padding: "0.75rem" }}>
+          {query.erreur}
+        </p>
+      )}
 
       <form action={modifierChantier} style={{ display: "grid", gap: "1.25rem", marginTop: "1rem" }}>
         <input type="hidden" name="id" value={chantier.id} />
@@ -57,7 +68,7 @@ export default async function ChantierAdminPage({
         <label style={{ display: "grid", gap: "0.25rem" }}>
           <span>Adresse</span>
           <input name="adresse" type="text" defaultValue={adresse} style={styleChamp} />
-          <span style={{ fontSize: "0.8rem", color: "#666" }}>
+          <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>
             {chantier.latitude != null && chantier.longitude != null
               ? `GPS actuel : ${chantier.latitude.toFixed(5)}, ${chantier.longitude.toFixed(5)}`
               : "Pas de GPS enregistré."}
@@ -75,19 +86,7 @@ export default async function ChantierAdminPage({
           </select>
         </label>
 
-        <button
-          type="submit"
-          style={{
-            fontSize: "1.1rem",
-            fontWeight: "bold",
-            padding: "1rem",
-            minHeight: 48,
-            borderRadius: 8,
-            border: "none",
-            background: "#0a5a9c",
-            color: "#fff",
-          }}
-        >
+        <button type="submit" style={styleBoutonPrimaire}>
           Enregistrer
         </button>
       </form>
