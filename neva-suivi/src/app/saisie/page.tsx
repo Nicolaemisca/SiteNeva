@@ -6,6 +6,7 @@ import { signOut } from "@/app/actions/auth";
 import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { Logo } from "@/components/Logo";
 import { dateDuJourBelge } from "@/lib/date";
+import { calculerSuggestion } from "@/lib/suggestionSaisie";
 import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
 import { ChampHeures } from "./ChampHeures";
 import { SelectChantier } from "./SelectChantier";
@@ -42,10 +43,31 @@ export default async function SaisiePage({
     .order("nom");
 
   const date = params.date || dateDuJourBelge();
-  const chantierId = params.chantier_id ?? "";
-  const heures = params.heures ?? "";
   const description = params.description ?? "";
   const materiel = params.materiel ?? "";
+
+  // Ni chantier ni heures déjà fournis par l'URL (erreur/doublon à
+  // republier) : premier passage sur un formulaire vierge, c'est le seul cas
+  // où la suggestion doit s'appliquer — jamais par-dessus une saisie déjà en
+  // cours de correction par l'utilisateur.
+  let suggestion: { chantierId: string | null; heures: number | null } = { chantierId: null, heures: null };
+  if (!params.chantier_id && !params.heures) {
+    const aujourdHui = dateDuJourBelge();
+    const { data: saisiesRecentes } = await supabase
+      .from("saisies")
+      .select("date, chantier_id, heures")
+      .eq("user_id", user.id)
+      .gte("date", new Date(Date.parse(aujourdHui) - 14 * 86_400_000).toISOString().slice(0, 10))
+      .lt("date", aujourdHui);
+
+    suggestion = calculerSuggestion(saisiesRecentes ?? [], aujourdHui);
+  }
+
+  const chantierId = params.chantier_id ?? suggestion.chantierId ?? "";
+  const heures = params.heures ?? (suggestion.heures != null ? String(suggestion.heures) : "");
+  const nomChantierSuggere = suggestion.chantierId
+    ? chantiers?.find((c) => c.id === suggestion.chantierId)?.nom
+    : null;
 
   return (
     <main
@@ -204,6 +226,32 @@ export default async function SaisiePage({
               Confirmer quand même
             </BoutonEnvoi>
           </form>
+        </div>
+      )}
+
+      {(nomChantierSuggere || suggestion.heures != null) && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "0.6rem",
+            border: `1.5px solid ${couleurs.primaire}`,
+            background: "#eaf1f8",
+            borderRadius: 8,
+            padding: "0.85rem",
+            marginBottom: "1.25rem",
+          }}
+        >
+          <span aria-hidden style={{ fontSize: "1.1rem", lineHeight: 1 }}>
+            💡
+          </span>
+          <p style={{ margin: 0, fontSize: "0.9rem" }}>
+            <strong>Suggestion</strong> d&apos;après tes deux dernières semaines
+            {nomChantierSuggere ? ` : ${nomChantierSuggere}` : ""}
+            {suggestion.heures != null ? `${nomChantierSuggere ? "," : " :"} ${suggestion.heures}h` : ""} — déjà
+            rempli ci-dessous, modifie librement. Rien n&apos;est enregistré tant que tu n&apos;appuies pas sur
+            « Enregistrer ».
+          </p>
         </div>
       )}
 
