@@ -69,9 +69,9 @@ type Saisie = {
 export default async function HistoriquePage({
   searchParams,
 }: {
-  searchParams: Promise<{ mois?: string }>;
+  searchParams: Promise<{ mois?: string; modifie?: string }>;
 }) {
-  const { mois: moisParam } = await searchParams;
+  const { mois: moisParam, modifie } = await searchParams;
   const mois = moisValide(moisParam);
   const supabase = await createClient();
 
@@ -199,6 +199,21 @@ export default async function HistoriquePage({
         )}
       </div>
 
+      {modifie && (
+        <p
+          style={{
+            color: couleurs.succes,
+            background: couleurs.succesFond,
+            border: `1.5px solid ${couleurs.succes}`,
+            borderRadius: 8,
+            padding: "0.75rem",
+            fontWeight: 600,
+          }}
+        >
+          Saisie modifiée.
+        </p>
+      )}
+
       {error && (
         <p
           style={{
@@ -281,20 +296,24 @@ export default async function HistoriquePage({
                         </p>
                       )}
                       {modifiable && (
-                        <span
+                        <Link
+                          href={`/historique/${s.id}`}
                           style={{
-                            display: "inline-block",
+                            display: "inline-flex",
+                            alignItems: "center",
                             marginTop: "0.5rem",
                             fontSize: "0.75rem",
                             fontWeight: 700,
                             color: couleurs.primaire,
                             border: `1.5px solid ${couleurs.primaire}`,
                             borderRadius: 999,
-                            padding: "0.1rem 0.55rem",
+                            padding: "0.2rem 0.65rem",
+                            minHeight: 28,
+                            textDecoration: "none",
                           }}
                         >
-                          Modifiable
-                        </span>
+                          Modifiable — corriger
+                        </Link>
                       )}
                     </div>
                   );
