@@ -41,6 +41,22 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Un compte désactivé par l'admin (consigne 3 : "ne peut plus se
+  // connecter") doit perdre l'accès immédiatement, pas seulement à la
+  // prochaine tentative de connexion — vérifié à chaque requête plutôt qu'à
+  // la seule connexion, pour couvrir une session déjà ouverte.
+  if (user && !isPublicRoute) {
+    const { data: profil } = await supabase.from("users").select("actif").eq("id", user.id).single();
+
+    if (profil && !profil.actif) {
+      await supabase.auth.signOut();
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("erreur", "Ce compte a été désactivé.");
+      return NextResponse.redirect(url);
+    }
+  }
+
   return response;
 }
 
