@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { couleurs, styleBoutonPrimaire } from "@/lib/ui";
 
@@ -50,6 +51,11 @@ export default async function SaisiesAdminPage({
 
   const { data, error } = await requete;
   const saisies = (data ?? []) as unknown as LigneSaisie[];
+
+  // Un seul aller-retour pour savoir quelles lignes ont un historique de
+  // modification (consigne 4) plutôt qu'une requête par ligne affichée.
+  const { data: modifications } = await supabase.from("saisies_historique").select("saisie_id");
+  const idsModifies = new Set((modifications ?? []).map((m) => m.saisie_id as string));
 
   const totalHeures = saisies.reduce((somme, s) => somme + Number(s.heures), 0);
 
@@ -134,6 +140,7 @@ export default async function SaisiesAdminPage({
             <th style={styleTh}>Heures</th>
             <th style={styleTh}>Description</th>
             <th style={styleTh}>Matériel</th>
+            <th style={styleTh} />
           </tr>
         </thead>
         <tbody>
@@ -145,11 +152,31 @@ export default async function SaisiesAdminPage({
               <td style={styleTd}>{Number(s.heures).toFixed(2)}</td>
               <td style={styleTd}>{s.description ?? "—"}</td>
               <td style={styleTd}>{s.materiel ?? "—"}</td>
+              <td style={styleTd}>
+                {idsModifies.has(s.id) && (
+                  <Link
+                    href={`/admin/saisies/${s.id}/historique`}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      fontSize: "0.75rem",
+                      fontWeight: 700,
+                      color: couleurs.avertissement,
+                      border: `1.5px solid ${couleurs.avertissement}`,
+                      borderRadius: 999,
+                      padding: "0.2rem 0.6rem",
+                      textDecoration: "none",
+                    }}
+                  >
+                    Modifiée
+                  </Link>
+                )}
+              </td>
             </tr>
           ))}
           {saisies.length === 0 && (
             <tr>
-              <td style={styleTd} colSpan={6}>
+              <td style={styleTd} colSpan={7}>
                 Aucune saisie pour ces filtres.
               </td>
             </tr>
