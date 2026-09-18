@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire } from "@/lib/ui";
 
-const styleTh = { textAlign: "left", padding: "0.5rem", borderBottom: "2px solid #ddd" } as const;
-const styleTd = { padding: "0.5rem", borderBottom: "1px solid #eee" } as const;
+const styleTh = { textAlign: "left", padding: "0.5rem", borderBottom: `2px solid ${couleurs.bordure}` } as const;
+const styleTd = { padding: "0.5rem", borderBottom: "1px solid #e2e2e2" } as const;
 
 const LIBELLE_STATUT: Record<string, string> = {
   actif: "Actif",
@@ -24,21 +25,16 @@ export default async function ChantiersAdminPage() {
     <main>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1 style={{ fontSize: "1.1rem", margin: 0 }}>Chantiers</h1>
-        <Link
-          href="/admin/chantiers/nouveau"
-          style={{
-            padding: "0.6rem 1rem",
-            borderRadius: 8,
-            background: "#0a5a9c",
-            color: "#fff",
-            textDecoration: "none",
-          }}
-        >
+        <Link href="/admin/chantiers/nouveau" style={{ ...styleBoutonPrimaire, textDecoration: "none", padding: "0.6rem 1.1rem", minHeight: 44 }}>
           + Nouveau chantier
         </Link>
       </div>
 
-      {error && <p style={{ color: "#b00020" }}>{error.message}</p>}
+      {error && (
+        <p style={{ color: couleurs.erreur, background: couleurs.erreurFond, border: `1.5px solid ${couleurs.erreur}`, borderRadius: 8, padding: "0.75rem" }}>
+          {error.message}
+        </p>
+      )}
 
       <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "1.25rem" }}>
         <thead>
@@ -62,7 +58,12 @@ export default async function ChantiersAdminPage() {
               </td>
               <td style={styleTd}>{LIBELLE_STATUT[chantier.statut] ?? chantier.statut}</td>
               <td style={styleTd}>
-                <Link href={`/admin/chantiers/${chantier.id}`}>Modifier</Link>
+                <Link
+                  href={`/admin/chantiers/${chantier.id}`}
+                  style={{ ...styleBoutonSecondaire, minHeight: 36, padding: "0.35rem 0.75rem", fontSize: "0.85rem" }}
+                >
+                  Modifier
+                </Link>
               </td>
             </tr>
           ))}

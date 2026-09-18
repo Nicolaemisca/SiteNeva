@@ -7,7 +7,7 @@ const nextConfig = {
   // réseau local) pouvait tourner sur un bundle JS périmé tant que la page
   // n'était pas rechargée manuellement, masquant les correctifs déjà
   // appliqués. Adapter/étendre cette liste si l'IP locale change.
-  allowedDevOrigins: ["192.168.1.213"],
+  allowedDevOrigins: ["192.168.1.213", "10.3.0.191"],
 };
 
 export default nextConfig;
