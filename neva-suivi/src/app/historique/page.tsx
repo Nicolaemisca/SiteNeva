@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { dateDuJourBelge } from "@/lib/date";
 import { Logo } from "@/components/Logo";
 import { couleurs, styleBoutonSecondaire } from "@/lib/ui";
+import { dictionnaires, estLangueValide, type Langue } from "@/lib/i18n/dictionnaires";
 
 const MOIS_REGEX = /^\d{4}-\d{2}$/;
 
@@ -30,18 +31,29 @@ function decalerMois(mois: string, delta: number): string {
   return new Date(Date.UTC(annee, m - 1 + delta, 1)).toISOString().slice(0, 7);
 }
 
-function libelleMois(mois: string): string {
+// Noms de mois/jour tirés d'ICU plutôt que traduits à la main (fr-BE↔ro-RO) :
+// vocabulaire grammaticalement correct sans risque d'erreur de traduction,
+// tout en gardant l'ordre jour-mois-année identique dans les deux langues
+// (cahier consigne 8 : "format belge" dans les deux langues — une contrainte
+// structurelle, pas lexicale).
+function localeIntl(langue: Langue): string {
+  return langue === "ro" ? "ro-RO" : "fr-BE";
+}
+
+function libelleMois(mois: string, langue: Langue): string {
   const [annee, m] = mois.split("-").map(Number);
   const date = new Date(Date.UTC(annee, m - 1, 1));
-  const libelle = new Intl.DateTimeFormat("fr-BE", { month: "long", year: "numeric", timeZone: "UTC" }).format(
-    date
-  );
+  const libelle = new Intl.DateTimeFormat(localeIntl(langue), {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
   return libelle.charAt(0).toUpperCase() + libelle.slice(1);
 }
 
-function libelleJour(date: string): string {
+function libelleJour(date: string, langue: Langue): string {
   const d = new Date(`${date}T00:00:00Z`);
-  const libelle = new Intl.DateTimeFormat("fr-BE", {
+  const libelle = new Intl.DateTimeFormat(localeIntl(langue), {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -83,7 +95,9 @@ export default async function HistoriquePage({
     redirect("/login");
   }
 
-  const { data: profil } = await supabase.from("users").select("nom").eq("id", user.id).single();
+  const { data: profil } = await supabase.from("users").select("nom, langue").eq("id", user.id).single();
+  const langue = estLangueValide(profil?.langue) ? profil.langue : "fr";
+  const t = dictionnaires[langue];
 
   const { debut, finExclusive } = limitesMois(mois);
   const aujourdHui = dateDuJourBelge();
@@ -143,18 +157,26 @@ export default async function HistoriquePage({
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <Logo hauteur={40} />
           <div>
-            <h1 style={{ fontSize: "1.05rem", margin: 0 }}>Historique</h1>
+            <h1 style={{ fontSize: "1.05rem", margin: 0 }}>{t.historiquePage.titre}</h1>
             {profil && (
               <p style={{ margin: 0, color: couleurs.texteAttenue, fontSize: "0.9rem" }}>{profil.nom}</p>
             )}
           </div>
         </div>
-        <Link
-          href="/saisie"
-          style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.85rem" }}
-        >
-          Saisie
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <Link
+            href="/saisie"
+            style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.85rem" }}
+          >
+            {t.nav.saisie}
+          </Link>
+          <Link
+            href="/profil"
+            style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.85rem" }}
+          >
+            {t.nav.profil}
+          </Link>
+        </div>
       </header>
 
       <div
@@ -169,16 +191,16 @@ export default async function HistoriquePage({
         <Link
           href={`/historique?mois=${decalerMois(mois, -1)}`}
           style={{ ...styleBoutonSecondaire, minHeight: 44, padding: "0 0.9rem" }}
-          aria-label="Mois précédent"
+          aria-label={t.historiquePage.moisPrecedent}
         >
           ◀
         </Link>
-        <span style={{ fontSize: "1.1rem", fontWeight: 700 }}>{libelleMois(mois)}</span>
+        <span style={{ fontSize: "1.1rem", fontWeight: 700 }}>{libelleMois(mois, langue)}</span>
         {peutAvancer ? (
           <Link
             href={`/historique?mois=${decalerMois(mois, 1)}`}
             style={{ ...styleBoutonSecondaire, minHeight: 44, padding: "0 0.9rem" }}
-            aria-label="Mois suivant"
+            aria-label={t.historiquePage.moisSuivant}
           >
             ▶
           </Link>
@@ -210,7 +232,7 @@ export default async function HistoriquePage({
             fontWeight: 600,
           }}
         >
-          Saisie modifiée.
+          {t.historiquePage.saisieModifiee}
         </p>
       )}
 
@@ -224,7 +246,7 @@ export default async function HistoriquePage({
             padding: "0.75rem",
           }}
         >
-          Impossible de charger l&apos;historique : {error.message}
+          {t.historiquePage.erreurChargement} : {error.message}
         </p>
       )}
 
@@ -240,12 +262,12 @@ export default async function HistoriquePage({
           alignItems: "baseline",
         }}
       >
-        <span style={{ fontWeight: 600 }}>Total du mois</span>
+        <span style={{ fontWeight: 600 }}>{t.historiquePage.totalDuMois}</span>
         <span style={{ fontSize: "1.3rem", fontWeight: 700 }}>{totalMois.toFixed(2)} h</span>
       </div>
 
       {groupes.length === 0 && !error && (
-        <p style={{ color: couleurs.texteAttenue }}>Aucune saisie ce mois-ci.</p>
+        <p style={{ color: couleurs.texteAttenue }}>{t.historiquePage.aucuneSaisie}</p>
       )}
 
       <div style={{ display: "grid", gap: "1.25rem" }}>
@@ -261,7 +283,7 @@ export default async function HistoriquePage({
                   marginBottom: "0.5rem",
                 }}
               >
-                <h2 style={{ fontSize: "0.95rem", margin: 0 }}>{libelleJour(groupe.date)}</h2>
+                <h2 style={{ fontSize: "0.95rem", margin: 0 }}>{libelleJour(groupe.date, langue)}</h2>
                 <span style={{ fontSize: "0.9rem", color: couleurs.texteAttenue, fontWeight: 600 }}>
                   {totalJour.toFixed(2)} h
                 </span>
@@ -292,7 +314,7 @@ export default async function HistoriquePage({
                       )}
                       {s.materiel && (
                         <p style={{ margin: "0.25rem 0 0", color: couleurs.texteAttenue, fontSize: "0.85rem" }}>
-                          Matériel : {s.materiel}
+                          {t.historiquePage.materielPrefixe} : {s.materiel}
                         </p>
                       )}
                       {modifiable && (
@@ -312,7 +334,7 @@ export default async function HistoriquePage({
                             textDecoration: "none",
                           }}
                         >
-                          Modifiable — corriger
+                          {t.historiquePage.modifiableCorriger}
                         </Link>
                       )}
                     </div>
