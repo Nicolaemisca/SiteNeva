@@ -6,6 +6,7 @@ import { modifierSaisie } from "@/app/actions/saisies";
 import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
 import { ModeSaisieHeures } from "@/app/saisie/ModeSaisieHeures";
 import { SelectChantier } from "@/app/saisie/SelectChantier";
+import { Logo } from "@/components/Logo";
 import { dictionnaires, estLangueValide } from "@/lib/i18n/dictionnaires";
 
 const styleEtiquette = { fontWeight: 600, color: couleurs.texte } as const;
@@ -99,7 +100,7 @@ export default async function ModifierSaisiePage({
         paddingRight: "1rem",
         fontFamily: "sans-serif",
         color: couleurs.texte,
-        background: couleurs.fond,
+        background: couleurs.fondPage,
       }}
     >
       <header
@@ -113,7 +114,10 @@ export default async function ModifierSaisiePage({
           borderBottom: `1.5px solid ${couleurs.bordure}`,
         }}
       >
-        <h1 style={{ fontSize: "1.05rem", margin: 0 }}>{t.historiquePage.corrigerTitre}</h1>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <Logo hauteur={32} lien="/saisie" libelleLien={t.nav.accueil} />
+          <h1 style={{ fontSize: "1.05rem", margin: 0 }}>{t.historiquePage.corrigerTitre}</h1>
+        </div>
         <Link
           href="/historique"
           style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.85rem" }}

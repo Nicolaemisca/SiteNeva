@@ -90,7 +90,7 @@ export default async function SaisiePage({
         paddingRight: "1rem",
         fontFamily: "sans-serif",
         color: couleurs.texte,
-        background: couleurs.fond,
+        background: couleurs.fondPage,
       }}
     >
       <header
@@ -105,7 +105,7 @@ export default async function SaisiePage({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <Logo hauteur={40} />
+          <Logo hauteur={40} lien="/saisie" libelleLien={t.nav.accueil} />
           <div>
             <h1 style={{ fontSize: "1.05rem", margin: 0 }}>{t.saisiePage.titre}</h1>
             {profil && (

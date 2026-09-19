@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { couleurs } from "@/lib/ui";
 
 // Icône d'écran d'accueil : src/app/icon.png et apple-icon.png couvrent déjà
 // le favicon et le "add to home screen" iOS via les conventions Next.js
@@ -10,7 +11,7 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Suivi des heures et de l'avancement chantier — Neva Energy.",
     start_url: "/saisie",
     display: "standalone",
-    background_color: "#ffffff",
+    background_color: couleurs.fondPage,
     theme_color: "#0c2551",
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png" },

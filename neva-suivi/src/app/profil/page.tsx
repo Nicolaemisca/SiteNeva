@@ -39,7 +39,7 @@ export default async function ProfilPage({
         paddingRight: "1rem",
         fontFamily: "sans-serif",
         color: couleurs.texte,
-        background: couleurs.fond,
+        background: couleurs.fondPage,
       }}
     >
       <header
@@ -54,7 +54,7 @@ export default async function ProfilPage({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <Logo hauteur={40} />
+          <Logo hauteur={40} lien="/saisie" libelleLien={t.nav.accueil} />
           <h1 style={{ fontSize: "1.05rem", margin: 0 }}>{t.profilPage.titre}</h1>
         </div>
         <Link

@@ -13,6 +13,10 @@ export const couleurs = {
   texte: "#14161a",
   texteAttenue: "#40454c",
   fond: "#ffffff",
+  // Fond de page (derrière les cartes/champs, qui eux restent en `fond`
+  // blanc pour se détacher) : un gris très clair plutôt qu'un blanc pur,
+  // moins agressif à l'œil en plein soleil sur chantier.
+  fondPage: "#eef0f2",
   primaire: "#0c2551",
   primaireTexte: "#ffffff",
   accentVert: "#019f76",
