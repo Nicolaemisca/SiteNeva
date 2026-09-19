@@ -79,6 +79,7 @@ type LigneSaisie = {
   materiel: string | null;
   chantier_nom: string | null;
   personne_nom: string | null;
+  exportee_le: string | null;
 };
 
 export default async function SaisiesAdminPage({
@@ -94,6 +95,7 @@ export default async function SaisiesAdminPage({
   const erreur = unParam(params.erreur);
   const supprime = unParam(params.supprime);
   const idsAConfirmer = normaliserIds(params.supprimer_ids);
+  const nonExporteesUniquement = unParam(params.non_exportees) === "1";
   const { colonne: colonneTri, direction: directionTri } = analyserTri(unParam(params.tri));
   const tri = `${colonneTri}-${directionTri}`;
   const page = Math.max(1, Number(unParam(params.page)) || 1);
@@ -107,12 +109,13 @@ export default async function SaisiesAdminPage({
 
   let requete = supabase
     .from("saisies_detaillees")
-    .select("id, date, heures, description, materiel, chantier_nom, personne_nom", { count: "exact" });
+    .select("id, date, heures, description, materiel, chantier_nom, personne_nom, exportee_le", { count: "exact" });
 
   if (chantierId) requete = requete.eq("chantier_id", chantierId);
   if (userId) requete = requete.eq("user_id", userId);
   if (du) requete = requete.gte("date", du);
   if (au) requete = requete.lte("date", au);
+  if (nonExporteesUniquement) requete = requete.is("exportee_le", null);
 
   const infoTri = TRI_COLONNES[colonneTri];
   requete = requete.order(infoTri.colonne, { ascending: directionTri === "asc" });
@@ -144,6 +147,7 @@ export default async function SaisiesAdminPage({
   if (userId) requeteTotal = requeteTotal.eq("user_id", userId);
   if (du) requeteTotal = requeteTotal.gte("date", du);
   if (au) requeteTotal = requeteTotal.lte("date", au);
+  if (nonExporteesUniquement) requeteTotal = requeteTotal.is("exportee_le", null);
   const { data: toutesLesHeures } = await requeteTotal;
   const totalHeuresFiltre = (toutesLesHeures ?? []).reduce((somme, s) => somme + Number(s.heures), 0);
 
@@ -152,7 +156,20 @@ export default async function SaisiesAdminPage({
   if (userId) filtresActifs.user_id = userId;
   if (du) filtresActifs.du = du;
   if (au) filtresActifs.au = au;
-  const requeteExport = new URLSearchParams(filtresActifs).toString();
+  if (nonExporteesUniquement) filtresActifs.non_exportees = "1";
+
+  // Exporter par défaut ne prend que les saisies jamais exportées (cahier
+  // consigne 13 : "propose par défaut l'export des seules saisies jamais
+  // exportées") — indépendant de la case à cocher du tableau, qui ne filtre
+  // que ce qui s'affiche à l'écran. "Exporter tout" ignore ce critère.
+  const paramsExportDefaut = new URLSearchParams(filtresActifs);
+  paramsExportDefaut.set("non_exportees", "1");
+  const urlExportDefaut = `/admin/export?${paramsExportDefaut.toString()}`;
+
+  const paramsExportTout = new URLSearchParams(filtresActifs);
+  paramsExportTout.delete("non_exportees");
+  const requeteExportTout = paramsExportTout.toString();
+  const urlExportTout = `/admin/export${requeteExportTout ? `?${requeteExportTout}` : ""}`;
 
   // Construit une URL de cette même page en ne changeant que les paramètres
   // donnés — sert aux liens de tri, de pagination et au bouton "Annuler" de
@@ -237,15 +254,26 @@ export default async function SaisiesAdminPage({
           <input type="date" name="au" defaultValue={au ?? ""} style={styleChamp} />
         </label>
 
+        <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", minHeight: 44, fontSize: "0.9rem" }}>
+          <input type="checkbox" name="non_exportees" value="1" defaultChecked={nonExporteesUniquement} />
+          Non exportées uniquement
+        </label>
+
         <button type="submit" style={styleChamp}>
           Filtrer
         </button>
 
         <a
-          href={`/admin/export${requeteExport ? `?${requeteExport}` : ""}`}
+          href={urlExportDefaut}
           style={{ ...styleBoutonPrimaire, fontSize: "1rem", padding: "0.6rem 1rem", minHeight: 40, textDecoration: "none" }}
         >
-          Exporter Excel
+          Exporter (jamais exportées)
+        </a>
+        <a
+          href={urlExportTout}
+          style={{ ...styleBoutonSecondaire, fontSize: "0.9rem", padding: "0.6rem 1rem", minHeight: 40, textDecoration: "none" }}
+        >
+          Exporter tout
         </a>
       </form>
 
@@ -307,6 +335,7 @@ export default async function SaisiesAdminPage({
         {userId && <input type="hidden" name="user_id" value={userId} />}
         {du && <input type="hidden" name="du" value={du} />}
         {au && <input type="hidden" name="au" value={au} />}
+        {nonExporteesUniquement && <input type="hidden" name="non_exportees" value="1" />}
         <input type="hidden" name="tri" value={tri} />
         <input type="hidden" name="page" value={page} />
 
@@ -337,25 +366,45 @@ export default async function SaisiesAdminPage({
                   <td style={styleTd}>{s.description ?? "—"}</td>
                   <td style={styleTd}>{s.materiel ?? "—"}</td>
                   <td style={styleTd}>
-                    {idsModifies.has(s.id) && (
-                      <Link
-                        href={`/admin/saisies/${s.id}/historique`}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          fontSize: "0.7rem",
-                          fontWeight: 700,
-                          color: couleurs.avertissement,
-                          border: `1.5px solid ${couleurs.avertissement}`,
-                          borderRadius: 999,
-                          padding: "0.1rem 0.5rem",
-                          textDecoration: "none",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Modifiée
-                      </Link>
-                    )}
+                    <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
+                      {idsModifies.has(s.id) && (
+                        <Link
+                          href={`/admin/saisies/${s.id}/historique`}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            fontSize: "0.7rem",
+                            fontWeight: 700,
+                            color: couleurs.avertissement,
+                            border: `1.5px solid ${couleurs.avertissement}`,
+                            borderRadius: 999,
+                            padding: "0.1rem 0.5rem",
+                            textDecoration: "none",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          Modifiée
+                        </Link>
+                      )}
+                      {s.exportee_le && (
+                        <span
+                          title={`Exportée le ${new Date(s.exportee_le).toLocaleString("fr-BE", { dateStyle: "short", timeStyle: "short" })}`}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            fontSize: "0.7rem",
+                            fontWeight: 700,
+                            color: couleurs.texteAttenue,
+                            border: `1.5px solid ${couleurs.bordure}`,
+                            borderRadius: 999,
+                            padding: "0.1rem 0.5rem",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          Exportée {new Date(s.exportee_le).toLocaleDateString("fr-BE")}
+                        </span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
