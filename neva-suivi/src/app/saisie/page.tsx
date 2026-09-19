@@ -8,7 +8,7 @@ import { Logo } from "@/components/Logo";
 import { dateDuJourBelge } from "@/lib/date";
 import { calculerSuggestion } from "@/lib/suggestionSaisie";
 import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
-import { ChampHeures } from "./ChampHeures";
+import { ModeSaisieHeures } from "./ModeSaisieHeures";
 import { SelectChantier } from "./SelectChantier";
 
 const styleEtiquette = { fontWeight: 600, color: couleurs.texte } as const;
@@ -50,12 +50,12 @@ export default async function SaisiePage({
   // republier) : premier passage sur un formulaire vierge, c'est le seul cas
   // où la suggestion doit s'appliquer — jamais par-dessus une saisie déjà en
   // cours de correction par l'utilisateur.
-  let suggestion: { chantierId: string | null; heures: number | null } = { chantierId: null, heures: null };
-  if (!params.chantier_id && !params.heures) {
+  let suggestion: ReturnType<typeof calculerSuggestion> = { chantierId: null, heures: null, horaires: null };
+  if (!params.chantier_id && !params.heures && !params.heure_debut) {
     const aujourdHui = dateDuJourBelge();
     const { data: saisiesRecentes } = await supabase
       .from("saisies")
-      .select("date, chantier_id, heures")
+      .select("date, chantier_id, heures, heure_debut, heure_fin, pause_minutes")
       .eq("user_id", user.id)
       .gte("date", new Date(Date.parse(aujourdHui) - 14 * 86_400_000).toISOString().slice(0, 10))
       .lt("date", aujourdHui);
@@ -64,10 +64,17 @@ export default async function SaisiePage({
   }
 
   const chantierId = params.chantier_id ?? suggestion.chantierId ?? "";
-  const heures = params.heures ?? (suggestion.heures != null ? String(suggestion.heures) : "");
   const nomChantierSuggere = suggestion.chantierId
     ? chantiers?.find((c) => c.id === suggestion.chantierId)?.nom
     : null;
+
+  // Le mode horaires ne s'impose que s'il a une suggestion à offrir ; sinon
+  // le mode total reste par défaut (le plus rapide, cahier §2).
+  const modeInitial = (params.mode as "total" | "horaires" | undefined) ?? (suggestion.horaires ? "horaires" : "total");
+  const heures = params.heures ?? (suggestion.heures != null ? String(suggestion.heures) : "");
+  const heureDebut = params.heure_debut ?? suggestion.horaires?.debut ?? "";
+  const heureFin = params.heure_fin ?? suggestion.horaires?.fin ?? "";
+  const pauseMinutes = params.pause_minutes ?? (suggestion.horaires ? String(suggestion.horaires.pauseMinutes) : "");
 
   return (
     <main
@@ -218,7 +225,11 @@ export default async function SaisiePage({
           <form action={creerSaisie} style={{ marginTop: "0.75rem" }}>
             <input type="hidden" name="date" value={date} />
             <input type="hidden" name="chantier_id" value={chantierId} />
+            <input type="hidden" name="mode" value={modeInitial} />
             <input type="hidden" name="heures" value={heures} />
+            <input type="hidden" name="heure_debut" value={heureDebut} />
+            <input type="hidden" name="heure_fin" value={heureFin} />
+            <input type="hidden" name="pause_minutes" value={pauseMinutes} />
             <input type="hidden" name="description" value={description} />
             <input type="hidden" name="materiel" value={materiel} />
             <input type="hidden" name="confirmer_doublon" value="1" />
@@ -229,7 +240,7 @@ export default async function SaisiePage({
         </div>
       )}
 
-      {(nomChantierSuggere || suggestion.heures != null) && (
+      {(nomChantierSuggere || suggestion.heures != null || suggestion.horaires) && (
         <div
           style={{
             display: "flex",
@@ -248,9 +259,13 @@ export default async function SaisiePage({
           <p style={{ margin: 0, fontSize: "0.9rem" }}>
             <strong>Suggestion</strong> d&apos;après tes deux dernières semaines
             {nomChantierSuggere ? ` : ${nomChantierSuggere}` : ""}
-            {suggestion.heures != null ? `${nomChantierSuggere ? "," : " :"} ${suggestion.heures}h` : ""} — déjà
-            rempli ci-dessous, modifie librement. Rien n&apos;est enregistré tant que tu n&apos;appuies pas sur
-            « Enregistrer ».
+            {suggestion.horaires
+              ? `${nomChantierSuggere ? "," : " :"} ${suggestion.horaires.debut}–${suggestion.horaires.fin}`
+              : suggestion.heures != null
+                ? `${nomChantierSuggere ? "," : " :"} ${suggestion.heures}h`
+                : ""}{" "}
+            — déjà rempli ci-dessous, modifie librement. Rien n&apos;est enregistré tant que tu n&apos;appuies pas
+            sur « Enregistrer ».
           </p>
         </div>
       )}
@@ -276,7 +291,13 @@ export default async function SaisiePage({
           <span id="etiquette-heures" style={styleEtiquette}>
             Heures
           </span>
-          <ChampHeures valeurInitiale={heures} />
+          <ModeSaisieHeures
+            modeInitial={modeInitial}
+            valeurInitiale={heures}
+            debutInitial={heureDebut}
+            finInitial={heureFin}
+            pauseInitiale={pauseMinutes}
+          />
         </div>
 
         <label style={{ display: "grid", gap: "0.35rem" }}>

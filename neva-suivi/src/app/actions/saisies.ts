@@ -12,6 +12,65 @@ function versUrlModification(id: string, params: Record<string, string>): string
   return `/historique/${id}?${new URLSearchParams(params).toString()}`;
 }
 
+type ChampsHeures =
+  | { ok: true; heures: number; heureDebut: string | null; heureFin: string | null; pauseMinutes: number | null }
+  | { ok: false; erreur: string };
+
+// Deux modes coexistent (cahier consigne 6) : total direct, ou début/fin/
+// pause dont le total est déduit. Le total est toujours recalculé ici côté
+// serveur — jamais une valeur envoyée telle quelle par le client, même en
+// mode horaires où le formulaire l'affiche déjà pour un retour immédiat.
+function lireChampsHeures(formData: FormData): ChampsHeures {
+  const mode = String(formData.get("mode") ?? "total");
+
+  if (mode === "horaires") {
+    const heureDebut = String(formData.get("heure_debut") ?? "");
+    const heureFin = String(formData.get("heure_fin") ?? "");
+    const pauseMinutes = Number(formData.get("pause_minutes") ?? "0");
+
+    if (!heureDebut || !heureFin || Number.isNaN(pauseMinutes) || pauseMinutes < 0) {
+      return { ok: false, erreur: "Heure de début, heure de fin et pause sont requises." };
+    }
+
+    const [hD, mD] = heureDebut.split(":").map(Number);
+    const [hF, mF] = heureFin.split(":").map(Number);
+    const minutes = hF * 60 + mF - (hD * 60 + mD) - pauseMinutes;
+    const heures = Math.round((minutes / 60) * 100) / 100;
+
+    if (!(heures > 0) || heures > 24) {
+      return {
+        ok: false,
+        erreur: "L'heure de fin doit être après le début (pause déduite), pour un total d'au plus 24 h.",
+      };
+    }
+
+    return { ok: true, heures, heureDebut, heureFin, pauseMinutes };
+  }
+
+  const heuresBrut = String(formData.get("heures") ?? "").trim().replace(",", ".");
+  const heures = Number(heuresBrut);
+
+  if (!heuresBrut || Number.isNaN(heures) || heures <= 0 || heures > 24) {
+    return { ok: false, erreur: "Heures (entre 0 et 24) requises." };
+  }
+
+  return { ok: true, heures, heureDebut: null, heureFin: null, pauseMinutes: null };
+}
+
+// Conserve tous les champs du formulaire (y compris le détail horaire) pour
+// republier exactement ce que l'utilisateur avait saisi en cas d'erreur ou
+// de doublon — jamais juste le total, sinon un retour au mode horaires
+// perdrait le détail déjà tapé.
+function champsHorairesAConserver(formData: FormData): Record<string, string> {
+  return {
+    mode: String(formData.get("mode") ?? "total"),
+    heures: String(formData.get("heures") ?? ""),
+    heure_debut: String(formData.get("heure_debut") ?? ""),
+    heure_fin: String(formData.get("heure_fin") ?? ""),
+    pause_minutes: String(formData.get("pause_minutes") ?? ""),
+  };
+}
+
 // Créé une saisie. Le doublon (même technicien/chantier/date) n'est jamais
 // bloqué (cahier §7), seulement signalé : un premier appel sans
 // confirmer_doublon s'arrête et renvoie vers un écran d'avertissement qui
@@ -30,7 +89,6 @@ export async function creerSaisie(formData: FormData) {
 
   const date = String(formData.get("date") ?? "");
   const chantierId = String(formData.get("chantier_id") ?? "");
-  const heuresBrut = String(formData.get("heures") ?? "").trim().replace(",", ".");
   const description = String(formData.get("description") ?? "").trim();
   const materiel = String(formData.get("materiel") ?? "").trim();
   const confirmerDoublon = formData.get("confirmer_doublon") === "1";
@@ -38,18 +96,18 @@ export async function creerSaisie(formData: FormData) {
   const champsAConserver = {
     date,
     chantier_id: chantierId,
-    heures: heuresBrut,
     description,
     materiel,
+    ...champsHorairesAConserver(formData),
   };
 
-  const heures = Number(heuresBrut);
+  const champsHeures = lireChampsHeures(formData);
 
-  if (!date || !chantierId || !heuresBrut || Number.isNaN(heures) || heures <= 0 || heures > 24) {
+  if (!date || !chantierId || !champsHeures.ok) {
     redirect(
       versUrlSaisie({
         ...champsAConserver,
-        erreur: "Date, chantier et heures (entre 0 et 24) sont requis.",
+        erreur: !champsHeures.ok ? champsHeures.erreur : "Date et chantier sont requis.",
       })
     );
   }
@@ -72,7 +130,10 @@ export async function creerSaisie(formData: FormData) {
     user_id: user.id,
     chantier_id: chantierId,
     date,
-    heures,
+    heures: champsHeures.heures,
+    heure_debut: champsHeures.heureDebut,
+    heure_fin: champsHeures.heureFin,
+    pause_minutes: champsHeures.pauseMinutes,
     description: description || null,
     materiel: materiel || null,
   });
@@ -105,7 +166,6 @@ export async function modifierSaisie(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const date = String(formData.get("date") ?? "");
   const chantierId = String(formData.get("chantier_id") ?? "");
-  const heuresBrut = String(formData.get("heures") ?? "").trim().replace(",", ".");
   const description = String(formData.get("description") ?? "").trim();
   const materiel = String(formData.get("materiel") ?? "").trim();
 
@@ -113,10 +173,23 @@ export async function modifierSaisie(formData: FormData) {
     redirect("/historique");
   }
 
-  const heures = Number(heuresBrut);
+  const champsAConserver = {
+    date,
+    chantier_id: chantierId,
+    description,
+    materiel,
+    ...champsHorairesAConserver(formData),
+  };
 
-  if (!date || !chantierId || !heuresBrut || Number.isNaN(heures) || heures <= 0 || heures > 24) {
-    redirect(versUrlModification(id, { erreur: "Date, chantier et heures (entre 0 et 24) sont requis." }));
+  const champsHeures = lireChampsHeures(formData);
+
+  if (!date || !chantierId || !champsHeures.ok) {
+    redirect(
+      versUrlModification(id, {
+        ...champsAConserver,
+        erreur: !champsHeures.ok ? champsHeures.erreur : "Date et chantier sont requis.",
+      })
+    );
   }
 
   const { data, error } = await supabase
@@ -124,7 +197,10 @@ export async function modifierSaisie(formData: FormData) {
     .update({
       date,
       chantier_id: chantierId,
-      heures,
+      heures: champsHeures.heures,
+      heure_debut: champsHeures.heureDebut,
+      heure_fin: champsHeures.heureFin,
+      pause_minutes: champsHeures.pauseMinutes,
       description: description || null,
       materiel: materiel || null,
     })
@@ -135,6 +211,7 @@ export async function modifierSaisie(formData: FormData) {
   if (error || !data) {
     redirect(
       versUrlModification(id, {
+        ...champsAConserver,
         erreur: "Modification refusée : cette saisie n'est peut-être plus dans le délai de correction (7 jours).",
       })
     );
