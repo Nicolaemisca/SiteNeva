@@ -2,6 +2,10 @@
 
 Document préparé le 18 septembre 2026.
 
+Avancement : consigne 1 résolue (la piste Tailwind était fausse, corrigé comme
+effet de bord du nettoyage Vercel). Consigne 3 implémentée sur la branche
+consigne-3-gestion-utilisateurs.
+
 Mode d'emploi : une consigne à la fois, chacune sur sa propre branche Git.
 Phrase d'ouverture type : « Crée une branche pour ce qui suit, implémente-le,
 et dis-moi comment le tester. »
@@ -9,7 +13,7 @@ Ne passe à la suivante qu'une fois la précédente testée et fusionnée.
 
 ---
 
-## 1. Corriger l'absence de styles en production — ✅ résolu (18/09/2026)
+## 1. Corriger l'absence de styles en production
 
 Contexte : sur site-neva.vercel.app, les pages s'affichent en HTML brut — liens
 violets soulignés, polices par défaut du navigateur. À faire en premier : tout
@@ -19,16 +23,6 @@ le reste s'affichera dans cette mise en page.
 > avec les polices et les liens par défaut du navigateur. Vérifie que Tailwind est
 > bien compilé et appliqué en production, corrige la cause, et explique-moi ce qui
 > n'allait pas.
-
-**Résolution** : ce projet n'utilise pas Tailwind — l'application est stylée
-entièrement en styles inline React (`style={{...}}`) depuis la phase 1, la
-piste Tailwind était donc fausse. Le HTML brut venait de la confusion
-provoquée par 4 projets Vercel dupliqués pointant sur le même dépôt GitHub
-(créés lors de tentatives répétées de configuration du Root Directory) ; l'un
-d'eux ne parvenait jamais à builder l'app Next.js. Les 4 projets ont été
-supprimés et remplacés par un seul projet Vercel propre. Vérifié en direct
-côté serveur (HTML renvoyé avec les styles inline présents) et confirmé par
-l'utilisateur sur site-neva.vercel.app.
 
 ---
 
@@ -129,11 +123,83 @@ associés — le vocabulaire du chantier ne s'invente pas.
 
 ---
 
+## 9. Archivage et suppression d'un chantier
+
+Contexte : un chantier terminé doit sortir de la liste de saisie sans disparaître
+de la base. Un chantier créé par erreur, lui, doit pouvoir être effacé — mais
+seulement s'il ne porte aucune heure.
+
+> Ajoute dans le back-office la possibilité d'archiver un chantier : il n'apparaît
+> plus dans la liste de saisie des techniciens, mais reste consultable et
+> exportable côté admin, avec ses saisies intactes. Ajoute aussi la suppression
+> d'un chantier, autorisée uniquement s'il ne porte aucune saisie ; sinon propose
+> l'archivage à la place et explique pourquoi.
+
+---
+
+## 10. Suppression de saisies par l'admin
+
+Contexte : nettoyer les lignes créées pendant les tests. Attention, demain ce
+seront de vraies heures prestées : la suppression laisse une trace, comme les
+modifications.
+
+> Permets à l'admin de supprimer une saisie depuis le back-office, avec
+> confirmation explicite. Enregistre la suppression dans l'historique : quelle
+> saisie, quel contenu, qui l'a supprimée, quand. Ajoute aussi une action de
+> suppression multiple pour nettoyer les données de test.
+
+---
+
+## 11. Mot de passe initial défini par l'admin
+
+Contexte : plus simple que d'envoyer un lien — tu donnes le mot de passe de vive
+voix au technicien, et il le change lui-même ensuite.
+
+> À la création d'un compte, laisse l'admin saisir lui-même un mot de passe
+> initial. Force l'utilisateur à le changer à sa première connexion, avant
+> d'accéder à l'application.
+
+---
+
+## 12. Vue compacte des heures dans le back-office
+
+Contexte : quatre personnes qui encodent tous les jours, cela fait vite plusieurs
+milliers de lignes. L'affichage doit tenir la charge et se lire comme un tableur.
+
+> Dans le back-office, affiche les saisies sous forme de tableau dense type
+> tableur : lignes serrées, en-têtes fixes au défilement, tri par colonne, filtres
+> par période, chantier et utilisateur, et pagination. Prévois plusieurs milliers
+> de lignes.
+
+---
+
+## 13. Marquage des heures déjà exportées
+
+Contexte : éviter de facturer deux fois les mêmes heures. C'est le risque le plus
+coûteux de toute l'application.
+
+> Marque les saisies incluses dans un export : date d'export et indication visuelle
+> dans le tableau. Permets de filtrer sur les non exportées uniquement, et propose
+> par défaut l'export des seules saisies jamais exportées.
+
+---
+
+## 14. Suppression d'un utilisateur
+
+Contexte : même logique que pour les chantiers. Un compte qui porte des heures ne
+se supprime pas, il se désactive.
+
+> Ajoute la suppression d'un utilisateur, autorisée uniquement s'il ne porte aucune
+> saisie. Sinon propose la désactivation à la place et explique pourquoi.
+
+---
+
 ## Points restés en suspens
 
-- Régénérer la clé secret Supabase et la reporter dans le fichier .env.local et
-  dans Vercel. Elle a circulé en clair.
-- Vérifier que la variable SUPABASE_SERVICE_ROLE_KEY est bien présente dans Vercel.
+- Révoquer l'ancienne clé secret Supabase nommée « default », une fois la nouvelle
+  clé validée en local ET en production.
+- Vérifier que la variable SUPABASE_SERVICE_ROLE_KEY est bien présente dans Vercel,
+  puis redéployer : Vercel n'applique pas une nouvelle variable au site déjà en ligne.
 - Tester l'accès au back-office depuis un compte technicien : il doit être refusé.
 - Valider le tri des chantiers par distance en extérieur, et vérifier que la liste
   ne se réorganise pas après la sélection d'un chantier.
