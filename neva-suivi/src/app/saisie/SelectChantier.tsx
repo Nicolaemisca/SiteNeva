@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { styleChamp } from "@/lib/ui";
+import { dictionnaires, type Langue } from "@/lib/i18n/dictionnaires";
 
 type Chantier = {
   id: string;
@@ -45,10 +46,13 @@ function positionValide(coords: GeolocationCoordinates): boolean {
 export function SelectChantier({
   chantiers,
   chantierIdInitial,
+  langue,
 }: {
   chantiers: Chantier[];
   chantierIdInitial: string;
+  langue: Langue;
 }) {
+  const t = dictionnaires[langue];
   const [ordre, setOrdre] = useState(chantiers);
   const [chantierId, setChantierId] = useState(chantierIdInitial);
 
@@ -89,7 +93,7 @@ export function SelectChantier({
       style={styleChamp}
     >
       <option value="" disabled>
-        Choisir un chantier
+        {t.champs.choisirUnChantier}
       </option>
       {ordre.map((chantier) => (
         <option key={chantier.id} value={chantier.id}>

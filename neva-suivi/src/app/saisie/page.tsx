@@ -8,6 +8,7 @@ import { Logo } from "@/components/Logo";
 import { dateDuJourBelge } from "@/lib/date";
 import { calculerSuggestion } from "@/lib/suggestionSaisie";
 import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
+import { dictionnaires, estLangueValide } from "@/lib/i18n/dictionnaires";
 import { ModeSaisieHeures } from "./ModeSaisieHeures";
 import { SelectChantier } from "./SelectChantier";
 
@@ -29,7 +30,9 @@ export default async function SaisiePage({
     redirect("/login");
   }
 
-  const { data: profil } = await supabase.from("users").select("nom, role").eq("id", user.id).single();
+  const { data: profil } = await supabase.from("users").select("nom, role, langue").eq("id", user.id).single();
+  const langue = estLangueValide(profil?.langue) ? profil.langue : "fr";
+  const t = dictionnaires[langue];
 
   // Seuls les chantiers actifs sont proposables à la saisie, admin compris
   // (cahier — les terminés/archivés restent consultables ailleurs, pas ici).
@@ -104,7 +107,7 @@ export default async function SaisiePage({
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <Logo hauteur={40} />
           <div>
-            <h1 style={{ fontSize: "1.05rem", margin: 0 }}>Saisie du jour</h1>
+            <h1 style={{ fontSize: "1.05rem", margin: 0 }}>{t.saisiePage.titre}</h1>
             {profil && (
               <p style={{ margin: 0, color: couleurs.texteAttenue, fontSize: "0.9rem" }}>
                 {profil.nom}
@@ -117,11 +120,17 @@ export default async function SaisiePage({
             href="/historique"
             style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.85rem" }}
           >
-            Historique
+            {t.nav.historique}
+          </Link>
+          <Link
+            href="/profil"
+            style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.85rem" }}
+          >
+            {t.nav.profil}
           </Link>
           {profil?.role === "admin" && (
             <Link href="/admin/chantiers" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.85rem" }}>
-              Back-office
+              {t.nav.backOffice}
             </Link>
           )}
           <form action={signOut}>
@@ -138,7 +147,7 @@ export default async function SaisiePage({
                 color: couleurs.texte,
               }}
             >
-              Déconnexion
+              {t.nav.deconnexion}
             </button>
           </form>
         </div>
@@ -179,7 +188,7 @@ export default async function SaisiePage({
           >
             ✓
           </span>
-          Saisie enregistrée.
+          {t.saisiePage.saisieEnregistree}
         </div>
       )}
       {params.erreur && (
@@ -205,7 +214,7 @@ export default async function SaisiePage({
             padding: "0.75rem",
           }}
         >
-          Impossible de charger les chantiers : {erreurChantiers.message}
+          {t.saisiePage.erreurChargementChantiers} : {erreurChantiers.message}
         </p>
       )}
 
@@ -219,9 +228,7 @@ export default async function SaisiePage({
             marginBottom: "1.5rem",
           }}
         >
-          <p style={{ margin: 0, color: couleurs.texte }}>
-            Une saisie existe déjà pour ce chantier à cette date. Ajouter quand même ?
-          </p>
+          <p style={{ margin: 0, color: couleurs.texte }}>{t.saisiePage.doublonMessage}</p>
           <form action={creerSaisie} style={{ marginTop: "0.75rem" }}>
             <input type="hidden" name="date" value={date} />
             <input type="hidden" name="chantier_id" value={chantierId} />
@@ -233,8 +240,8 @@ export default async function SaisiePage({
             <input type="hidden" name="description" value={description} />
             <input type="hidden" name="materiel" value={materiel} />
             <input type="hidden" name="confirmer_doublon" value="1" />
-            <BoutonEnvoi style={styleBoutonSecondaire} texteEnCours="Envoi…">
-              Confirmer quand même
+            <BoutonEnvoi style={styleBoutonSecondaire} texteEnCours={t.boutons.envoi}>
+              {t.boutons.confirmerQuandMeme}
             </BoutonEnvoi>
           </form>
         </div>
@@ -257,28 +264,27 @@ export default async function SaisiePage({
             💡
           </span>
           <p style={{ margin: 0, fontSize: "0.9rem" }}>
-            <strong>Suggestion</strong> d&apos;après tes deux dernières semaines
+            <strong>{t.saisiePage.suggestionIntro}</strong>
             {nomChantierSuggere ? ` : ${nomChantierSuggere}` : ""}
             {suggestion.horaires
               ? `${nomChantierSuggere ? "," : " :"} ${suggestion.horaires.debut}–${suggestion.horaires.fin}`
               : suggestion.heures != null
                 ? `${nomChantierSuggere ? "," : " :"} ${suggestion.heures}h`
                 : ""}{" "}
-            — déjà rempli ci-dessous, modifie librement. Rien n&apos;est enregistré tant que tu n&apos;appuies pas
-            sur « Enregistrer ».
+            — {t.saisiePage.suggestionSuffixe}
           </p>
         </div>
       )}
 
       <form action={creerSaisie} style={{ display: "grid", gap: "1.25rem" }}>
         <label style={{ display: "grid", gap: "0.35rem" }}>
-          <span style={styleEtiquette}>Date</span>
+          <span style={styleEtiquette}>{t.champs.date}</span>
           <input name="date" type="date" defaultValue={date} required style={styleChamp} />
         </label>
 
         <label style={{ display: "grid", gap: "0.35rem" }}>
-          <span style={styleEtiquette}>Chantier</span>
-          <SelectChantier chantiers={chantiers ?? []} chantierIdInitial={chantierId} />
+          <span style={styleEtiquette}>{t.champs.chantier}</span>
+          <SelectChantier chantiers={chantiers ?? []} chantierIdInitial={chantierId} langue={langue} />
         </label>
 
         {/* Div, pas label : le label ne doit envelopper qu'un seul contrôle
@@ -289,7 +295,7 @@ export default async function SaisiePage({
             sur téléphone). */}
         <div style={{ display: "grid", gap: "0.35rem" }}>
           <span id="etiquette-heures" style={styleEtiquette}>
-            Heures
+            {t.champs.heures}
           </span>
           <ModeSaisieHeures
             modeInitial={modeInitial}
@@ -297,11 +303,12 @@ export default async function SaisiePage({
             debutInitial={heureDebut}
             finInitial={heureFin}
             pauseInitiale={pauseMinutes}
+            langue={langue}
           />
         </div>
 
         <label style={{ display: "grid", gap: "0.35rem" }}>
-          <span style={styleEtiquette}>Description (optionnel)</span>
+          <span style={styleEtiquette}>{t.champs.description}</span>
           <textarea
             name="description"
             defaultValue={description}
@@ -311,12 +318,12 @@ export default async function SaisiePage({
         </label>
 
         <label style={{ display: "grid", gap: "0.35rem" }}>
-          <span style={styleEtiquette}>Matériel utilisé (optionnel)</span>
+          <span style={styleEtiquette}>{t.champs.materiel}</span>
           <input name="materiel" type="text" defaultValue={materiel} style={styleChamp} />
         </label>
 
-        <BoutonEnvoi style={styleBoutonPrimaire} texteEnCours="Enregistrement…">
-          Enregistrer
+        <BoutonEnvoi style={styleBoutonPrimaire} texteEnCours={t.boutons.enregistrement}>
+          {t.boutons.enregistrer}
         </BoutonEnvoi>
       </form>
     </main>

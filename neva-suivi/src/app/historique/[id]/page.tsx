@@ -6,6 +6,7 @@ import { modifierSaisie } from "@/app/actions/saisies";
 import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
 import { ModeSaisieHeures } from "@/app/saisie/ModeSaisieHeures";
 import { SelectChantier } from "@/app/saisie/SelectChantier";
+import { dictionnaires, estLangueValide } from "@/lib/i18n/dictionnaires";
 
 const styleEtiquette = { fontWeight: 600, color: couleurs.texte } as const;
 
@@ -55,6 +56,10 @@ export default async function ModifierSaisiePage({
   if (!user || !saisie) {
     notFound();
   }
+
+  const { data: profil } = await supabase.from("users").select("langue").eq("id", user.id).single();
+  const langue = estLangueValide(profil?.langue) ? profil.langue : "fr";
+  const t = dictionnaires[langue];
 
   const aujourdHui = dateDuJourBelge();
   if (!estModifiable(saisie.date, aujourdHui)) {
@@ -108,12 +113,12 @@ export default async function ModifierSaisiePage({
           borderBottom: `1.5px solid ${couleurs.bordure}`,
         }}
       >
-        <h1 style={{ fontSize: "1.05rem", margin: 0 }}>Corriger la saisie</h1>
+        <h1 style={{ fontSize: "1.05rem", margin: 0 }}>{t.historiquePage.corrigerTitre}</h1>
         <Link
           href="/historique"
           style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.85rem" }}
         >
-          Annuler
+          {t.boutons.annuler}
         </Link>
       </header>
 
@@ -136,18 +141,18 @@ export default async function ModifierSaisiePage({
         <input type="hidden" name="id" value={saisie.id} />
 
         <label style={{ display: "grid", gap: "0.35rem" }}>
-          <span style={styleEtiquette}>Date</span>
+          <span style={styleEtiquette}>{t.champs.date}</span>
           <input name="date" type="date" defaultValue={date} required style={styleChamp} />
         </label>
 
         <label style={{ display: "grid", gap: "0.35rem" }}>
-          <span style={styleEtiquette}>Chantier</span>
-          <SelectChantier chantiers={chantiers ?? []} chantierIdInitial={chantierId} />
+          <span style={styleEtiquette}>{t.champs.chantier}</span>
+          <SelectChantier chantiers={chantiers ?? []} chantierIdInitial={chantierId} langue={langue} />
         </label>
 
         <div style={{ display: "grid", gap: "0.35rem" }}>
           <span id="etiquette-heures" style={styleEtiquette}>
-            Heures
+            {t.champs.heures}
           </span>
           <ModeSaisieHeures
             modeInitial={modeInitial}
@@ -155,11 +160,12 @@ export default async function ModifierSaisiePage({
             debutInitial={heureDebut}
             finInitial={heureFin}
             pauseInitiale={pauseMinutes}
+            langue={langue}
           />
         </div>
 
         <label style={{ display: "grid", gap: "0.35rem" }}>
-          <span style={styleEtiquette}>Description (optionnel)</span>
+          <span style={styleEtiquette}>{t.champs.description}</span>
           <textarea
             name="description"
             defaultValue={description}
@@ -169,12 +175,12 @@ export default async function ModifierSaisiePage({
         </label>
 
         <label style={{ display: "grid", gap: "0.35rem" }}>
-          <span style={styleEtiquette}>Matériel utilisé (optionnel)</span>
+          <span style={styleEtiquette}>{t.champs.materiel}</span>
           <input name="materiel" type="text" defaultValue={materiel} style={styleChamp} />
         </label>
 
         <button type="submit" style={styleBoutonPrimaire}>
-          Enregistrer la correction
+          {t.boutons.enregistrerCorrection}
         </button>
       </form>
     </main>

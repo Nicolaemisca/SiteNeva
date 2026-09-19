@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { dictionnaires, estLangueValide, type Dictionnaire } from "@/lib/i18n/dictionnaires";
 
 function versUrlSaisie(params: Record<string, string>): string {
   return `/saisie?${new URLSearchParams(params).toString()}`;
@@ -20,7 +21,7 @@ type ChampsHeures =
 // pause dont le total est déduit. Le total est toujours recalculé ici côté
 // serveur — jamais une valeur envoyée telle quelle par le client, même en
 // mode horaires où le formulaire l'affiche déjà pour un retour immédiat.
-function lireChampsHeures(formData: FormData): ChampsHeures {
+function lireChampsHeures(formData: FormData, erreurs: Dictionnaire["erreursSaisie"]): ChampsHeures {
   const mode = String(formData.get("mode") ?? "total");
 
   if (mode === "horaires") {
@@ -29,7 +30,7 @@ function lireChampsHeures(formData: FormData): ChampsHeures {
     const pauseMinutes = Number(formData.get("pause_minutes") ?? "0");
 
     if (!heureDebut || !heureFin || Number.isNaN(pauseMinutes) || pauseMinutes < 0) {
-      return { ok: false, erreur: "Heure de début, heure de fin et pause sont requises." };
+      return { ok: false, erreur: erreurs.horairesRequis };
     }
 
     const [hD, mD] = heureDebut.split(":").map(Number);
@@ -38,10 +39,7 @@ function lireChampsHeures(formData: FormData): ChampsHeures {
     const heures = Math.round((minutes / 60) * 100) / 100;
 
     if (!(heures > 0) || heures > 24) {
-      return {
-        ok: false,
-        erreur: "L'heure de fin doit être après le début (pause déduite), pour un total d'au plus 24 h.",
-      };
+      return { ok: false, erreur: erreurs.finAvantDebut };
     }
 
     return { ok: true, heures, heureDebut, heureFin, pauseMinutes };
@@ -51,10 +49,18 @@ function lireChampsHeures(formData: FormData): ChampsHeures {
   const heures = Number(heuresBrut);
 
   if (!heuresBrut || Number.isNaN(heures) || heures <= 0 || heures > 24) {
-    return { ok: false, erreur: "Heures (entre 0 et 24) requises." };
+    return { ok: false, erreur: erreurs.heuresRequises };
   }
 
   return { ok: true, heures, heureDebut: null, heureFin: null, pauseMinutes: null };
+}
+
+async function langueUtilisateur(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string
+): Promise<Dictionnaire> {
+  const { data: profil } = await supabase.from("users").select("langue").eq("id", userId).single();
+  return dictionnaires[estLangueValide(profil?.langue) ? profil.langue : "fr"];
 }
 
 // Conserve tous les champs du formulaire (y compris le détail horaire) pour
@@ -87,6 +93,8 @@ export async function creerSaisie(formData: FormData) {
     redirect("/login");
   }
 
+  const t = await langueUtilisateur(supabase, user.id);
+
   const date = String(formData.get("date") ?? "");
   const chantierId = String(formData.get("chantier_id") ?? "");
   const description = String(formData.get("description") ?? "").trim();
@@ -101,13 +109,13 @@ export async function creerSaisie(formData: FormData) {
     ...champsHorairesAConserver(formData),
   };
 
-  const champsHeures = lireChampsHeures(formData);
+  const champsHeures = lireChampsHeures(formData, t.erreursSaisie);
 
   if (!date || !chantierId || !champsHeures.ok) {
     redirect(
       versUrlSaisie({
         ...champsAConserver,
-        erreur: !champsHeures.ok ? champsHeures.erreur : "Date et chantier sont requis.",
+        erreur: !champsHeures.ok ? champsHeures.erreur : t.erreursSaisie.dateChantierRequis,
       })
     );
   }
@@ -163,6 +171,8 @@ export async function modifierSaisie(formData: FormData) {
     redirect("/login");
   }
 
+  const t = await langueUtilisateur(supabase, user.id);
+
   const id = String(formData.get("id") ?? "");
   const date = String(formData.get("date") ?? "");
   const chantierId = String(formData.get("chantier_id") ?? "");
@@ -181,13 +191,13 @@ export async function modifierSaisie(formData: FormData) {
     ...champsHorairesAConserver(formData),
   };
 
-  const champsHeures = lireChampsHeures(formData);
+  const champsHeures = lireChampsHeures(formData, t.erreursSaisie);
 
   if (!date || !chantierId || !champsHeures.ok) {
     redirect(
       versUrlModification(id, {
         ...champsAConserver,
-        erreur: !champsHeures.ok ? champsHeures.erreur : "Date et chantier sont requis.",
+        erreur: !champsHeures.ok ? champsHeures.erreur : t.erreursSaisie.dateChantierRequis,
       })
     );
   }
@@ -212,7 +222,7 @@ export async function modifierSaisie(formData: FormData) {
     redirect(
       versUrlModification(id, {
         ...champsAConserver,
-        erreur: "Modification refusée : cette saisie n'est peut-être plus dans le délai de correction (7 jours).",
+        erreur: t.erreursSaisie.correctionRefusee,
       })
     );
   }

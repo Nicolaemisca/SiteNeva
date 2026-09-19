@@ -2,23 +2,12 @@
 
 import { useState, type CSSProperties } from "react";
 import { couleurs, styleChamp, TAILLE_TACTILE_MIN } from "@/lib/ui";
+import { dictionnaires, type Langue } from "@/lib/i18n/dictionnaires";
 
 // Presets de saisie rapide (cahier : priorité absolue à la rapidité sur
 // téléphone) — couvrent les durées les plus fréquentes, le clavier numérique
-// reste disponible pour affiner.
+// reste disponible pour affiner. Chiffres seuls : pas de texte à traduire.
 const PRESETS = [8, 9, 10, 11];
-
-// Menu déroulant à valeurs prédéfinies (cahier consigne 6), pas un champ
-// libre : la pause de midi se décline en quelques durées usuelles, pas en
-// minutes arbitraires.
-const OPTIONS_PAUSE = [
-  { minutes: 0, libelle: "Aucune" },
-  { minutes: 15, libelle: "15 min" },
-  { minutes: 30, libelle: "30 min" },
-  { minutes: 45, libelle: "45 min" },
-  { minutes: 60, libelle: "1 h" },
-  { minutes: 90, libelle: "1 h 30" },
-];
 
 const styleBoutonMode = (actif: boolean): CSSProperties => ({
   flex: 1,
@@ -50,13 +39,29 @@ export function ModeSaisieHeures({
   debutInitial,
   finInitial,
   pauseInitiale,
+  langue,
 }: {
   modeInitial: "total" | "horaires";
   valeurInitiale: string;
   debutInitial: string;
   finInitial: string;
   pauseInitiale: string;
+  langue: Langue;
 }) {
+  const t = dictionnaires[langue];
+
+  // Menu déroulant à valeurs prédéfinies (cahier consigne 6), pas un champ
+  // libre : la pause de midi se décline en quelques durées usuelles, pas en
+  // minutes arbitraires.
+  const optionsPause = [
+    { minutes: 0, libelle: t.modeHeures.pauseAucune },
+    { minutes: 15, libelle: t.modeHeures.pause15 },
+    { minutes: 30, libelle: t.modeHeures.pause30 },
+    { minutes: 45, libelle: t.modeHeures.pause45 },
+    { minutes: 60, libelle: t.modeHeures.pause1h },
+    { minutes: 90, libelle: t.modeHeures.pause1h30 },
+  ];
+
   const [mode, setMode] = useState<"total" | "horaires">(modeInitial);
   const [valeur, setValeur] = useState(valeurInitiale || "8");
   const [debut, setDebut] = useState(debutInitial);
@@ -69,10 +74,10 @@ export function ModeSaisieHeures({
     <div style={{ display: "grid", gap: "0.75rem" }}>
       <div style={{ display: "flex", gap: "0.5rem" }}>
         <button type="button" onClick={() => setMode("total")} style={styleBoutonMode(mode === "total")}>
-          Total direct
+          {t.modeHeures.totalDirect}
         </button>
         <button type="button" onClick={() => setMode("horaires")} style={styleBoutonMode(mode === "horaires")}>
-          Début / fin
+          {t.modeHeures.debutFin}
         </button>
       </div>
 
@@ -122,7 +127,7 @@ export function ModeSaisieHeures({
         <div style={{ display: "grid", gap: "0.5rem" }}>
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <label style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
-              <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>Début</span>
+              <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{t.modeHeures.debut}</span>
               <input
                 name="heure_debut"
                 type="time"
@@ -133,7 +138,7 @@ export function ModeSaisieHeures({
               />
             </label>
             <label style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
-              <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>Fin</span>
+              <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{t.modeHeures.fin}</span>
               <input
                 name="heure_fin"
                 type="time"
@@ -145,9 +150,9 @@ export function ModeSaisieHeures({
             </label>
           </div>
           <label style={{ display: "grid", gap: "0.25rem" }}>
-            <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>Pause</span>
+            <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{t.modeHeures.pause}</span>
             <select name="pause_minutes" value={pause} onChange={(e) => setPause(e.target.value)} style={styleChamp}>
-              {OPTIONS_PAUSE.map((o) => (
+              {optionsPause.map((o) => (
                 <option key={o.minutes} value={o.minutes}>
                   {o.libelle}
                 </option>
@@ -161,7 +166,9 @@ export function ModeSaisieHeures({
               color: heuresCalculees != null ? couleurs.primaire : couleurs.texteAttenue,
             }}
           >
-            {heuresCalculees != null ? `Total : ${heuresCalculees.toFixed(2)} h` : "Renseigne le début et la fin"}
+            {heuresCalculees != null
+              ? `${t.modeHeures.total} : ${heuresCalculees.toFixed(2)} h`
+              : t.modeHeures.renseigneDebutFin}
           </p>
         </div>
       )}
