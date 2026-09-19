@@ -3,6 +3,7 @@ import ExcelJS from "exceljs";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 
 type LigneSaisie = {
+  id: string;
   date: string;
   heures: number | string;
   description: string | null;
@@ -12,7 +13,9 @@ type LigneSaisie = {
 };
 
 // Mêmes filtres que /admin/saisies, appliqués côté serveur (pas d'export
-// "tout" masqué derrière un filtre vide côté client).
+// "tout" masqué derrière un filtre vide côté client). non_exportees=1
+// (cahier consigne 13) restreint aux saisies jamais encore exportées —
+// c'est ce que pose le bouton "Exporter" par défaut sur /admin/saisies.
 export async function GET(request: NextRequest) {
   const { supabase } = await requireAdmin();
 
@@ -21,16 +24,18 @@ export async function GET(request: NextRequest) {
   const userId = searchParams.get("user_id");
   const du = searchParams.get("du");
   const au = searchParams.get("au");
+  const nonExporteesUniquement = searchParams.get("non_exportees") === "1";
 
   let requete = supabase
     .from("saisies")
-    .select("date, heures, description, materiel, chantiers(nom), users(nom)")
+    .select("id, date, heures, description, materiel, chantiers(nom), users(nom)")
     .order("date", { ascending: false });
 
   if (chantierId) requete = requete.eq("chantier_id", chantierId);
   if (userId) requete = requete.eq("user_id", userId);
   if (du) requete = requete.gte("date", du);
   if (au) requete = requete.lte("date", au);
+  if (nonExporteesUniquement) requete = requete.is("exportee_le", null);
 
   const { data, error } = await requete;
 
@@ -68,6 +73,19 @@ export async function GET(request: NextRequest) {
   ligneTotal.font = { bold: true };
 
   const buffer = await classeur.xlsx.writeBuffer();
+
+  // Marque les saisies incluses (cahier consigne 13) une fois le fichier
+  // effectivement généré — jamais avant, pour ne pas marquer un export qui
+  // aurait échoué en cours de génération.
+  if (saisies.length > 0) {
+    await supabase
+      .from("saisies")
+      .update({ exportee_le: new Date().toISOString() })
+      .in(
+        "id",
+        saisies.map((s) => s.id)
+      );
+  }
 
   return new NextResponse(buffer, {
     headers: {
