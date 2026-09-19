@@ -50,6 +50,8 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/auth/callback");
 
+  const isChangementMotDePasse = request.nextUrl.pathname.startsWith("/changer-mot-de-passe");
+
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -59,15 +61,28 @@ export async function proxy(request: NextRequest) {
   // Un compte désactivé par l'admin (consigne 3 : "ne peut plus se
   // connecter") doit perdre l'accès immédiatement, pas seulement à la
   // prochaine tentative de connexion — vérifié à chaque requête plutôt qu'à
-  // la seule connexion, pour couvrir une session déjà ouverte.
+  // la seule connexion, pour couvrir une session déjà ouverte. Même requête
+  // récupère mot_de_passe_a_changer (consigne 11) : un compte créé par
+  // l'admin avec un mot de passe initial doit passer par
+  // /changer-mot-de-passe avant tout autre écran.
   if (user && !isPublicRoute) {
-    const { data: profil } = await supabase.from("users").select("actif").eq("id", user.id).single();
+    const { data: profil } = await supabase
+      .from("users")
+      .select("actif, mot_de_passe_a_changer")
+      .eq("id", user.id)
+      .single();
 
     if (profil && !profil.actif) {
       await supabase.auth.signOut();
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("erreur", "Ce compte a été désactivé.");
+      return NextResponse.redirect(url);
+    }
+
+    if (profil?.mot_de_passe_a_changer && !isChangementMotDePasse) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/changer-mot-de-passe";
       return NextResponse.redirect(url);
     }
   }

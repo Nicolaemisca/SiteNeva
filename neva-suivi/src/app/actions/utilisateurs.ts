@@ -23,6 +23,11 @@ function versUrlUtilisateurs(params: Record<string, string>): string {
   return `/admin/utilisateurs?${new URLSearchParams(params).toString()}`;
 }
 
+// L'admin saisit lui-même le mot de passe initial (cahier consigne 11) — plus
+// d'auto-génération ici : il le communique de vive voix au technicien, qui
+// devra le changer à sa première connexion (mot_de_passe_a_changer, forcé
+// via src/proxy.ts). La réinitialisation (reinitialiserMotDePasse plus bas)
+// reste inchangée : générée automatiquement, hors du champ de cette consigne.
 export async function creerUtilisateur(formData: FormData) {
   await requireAdmin();
   const admin = createAdminClient();
@@ -30,16 +35,19 @@ export async function creerUtilisateur(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const nom = String(formData.get("nom") ?? "").trim();
   const role = String(formData.get("role") ?? "technicien");
+  const motDePasse = String(formData.get("mot_de_passe") ?? "");
 
   if (!email || !nom || (role !== "admin" && role !== "technicien")) {
     redirect(versUrlUtilisateurs({ erreur: "Email, nom et rôle sont requis." }));
   }
 
-  const motDePasseTemporaire = genererMotDePasseTemporaire();
+  if (motDePasse.length < 8) {
+    redirect(versUrlUtilisateurs({ erreur: "Le mot de passe initial doit faire au moins 8 caractères." }));
+  }
 
   const { data, error } = await admin.auth.admin.createUser({
     email,
-    password: motDePasseTemporaire,
+    password: motDePasse,
     email_confirm: true,
     user_metadata: { nom },
   });
@@ -49,20 +57,22 @@ export async function creerUtilisateur(formData: FormData) {
   }
 
   // Le trigger on_auth_user_created crée la ligne public.users avec
-  // role='technicien' par défaut ; on l'aligne sur le rôle choisi si besoin.
-  if (role === "admin") {
-    const { error: erreurRole } = await admin.from("users").update({ role }).eq("id", data.user.id);
-    if (erreurRole) {
-      redirect(
-        versUrlUtilisateurs({
-          erreur: `Compte créé mais rôle non synchronisé : ${erreurRole.message}. Corrige-le manuellement.`,
-        })
-      );
-    }
+  // role='technicien' et mot_de_passe_a_changer=false par défaut ; on aligne
+  // le rôle si besoin et on force le changement de mot de passe.
+  const misesAJour: Record<string, unknown> = { mot_de_passe_a_changer: true };
+  if (role === "admin") misesAJour.role = role;
+
+  const { error: erreurMiseAJour } = await admin.from("users").update(misesAJour).eq("id", data.user.id);
+  if (erreurMiseAJour) {
+    redirect(
+      versUrlUtilisateurs({
+        erreur: `Compte créé mais rôle/statut non synchronisé : ${erreurMiseAJour.message}. Corrige-le manuellement.`,
+      })
+    );
   }
 
   revalidatePath("/admin/utilisateurs");
-  redirect(versUrlUtilisateurs({ cree: email, mot_de_passe: motDePasseTemporaire }));
+  redirect(versUrlUtilisateurs({ cree: email }));
 }
 
 export async function basculerActivation(formData: FormData) {

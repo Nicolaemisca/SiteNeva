@@ -79,7 +79,23 @@ export default async function UtilisateursAdminPage({
         </p>
       )}
 
-      {(params.cree || params.reinitialise) && params.mot_de_passe && (
+      {params.cree && (
+        <p
+          style={{
+            color: couleurs.succes,
+            background: couleurs.succesFond,
+            border: `1.5px solid ${couleurs.succes}`,
+            borderRadius: 8,
+            padding: "0.75rem",
+            marginTop: "1rem",
+            fontWeight: 600,
+          }}
+        >
+          Compte créé : {params.cree}. Il devra changer son mot de passe à sa première connexion.
+        </p>
+      )}
+
+      {params.reinitialise && params.mot_de_passe && (
         <div
           style={{
             border: `1.5px solid ${couleurs.succes}`,
@@ -90,7 +106,7 @@ export default async function UtilisateursAdminPage({
           }}
         >
           <p style={{ margin: 0, fontWeight: 700, color: couleurs.succes }}>
-            {params.cree ? `Compte créé : ${params.cree}` : `Mot de passe réinitialisé : ${params.reinitialise}`}
+            Mot de passe réinitialisé : {params.reinitialise}
           </p>
           <p style={{ margin: "0.5rem 0 0", color: couleurs.texte }}>
             Mot de passe temporaire (affiché une seule fois — communique-le au technicien) :
@@ -134,6 +150,20 @@ export default async function UtilisateursAdminPage({
               <option value="technicien">Technicien</option>
               <option value="admin">Admin</option>
             </select>
+          </label>
+          <label style={{ display: "grid", gap: "0.25rem" }}>
+            <span style={{ fontSize: "0.85rem" }}>Mot de passe initial</span>
+            {/* type="text", pas "password" : l'admin le dicte de vive voix au
+                technicien juste après (cahier consigne 11), pas besoin de le
+                masquer à lui-même pendant qu'il le tape. */}
+            <input
+              name="mot_de_passe"
+              type="text"
+              required
+              minLength={8}
+              autoComplete="off"
+              style={{ ...styleChamp, minHeight: 44, width: 200, fontFamily: "monospace" }}
+            />
           </label>
           <button type="submit" style={{ ...styleBoutonPrimaire, minHeight: 44 }}>
             Créer le compte
