@@ -140,12 +140,13 @@ export default async function HistoriquePage({
         paddingRight: "1rem",
         fontFamily: "sans-serif",
         color: couleurs.texte,
-        background: couleurs.fond,
+        background: couleurs.fondPage,
       }}
     >
       <header
         style={{
           display: "flex",
+          flexWrap: "wrap",
           justifyContent: "space-between",
           alignItems: "center",
           gap: "0.75rem",
@@ -155,7 +156,7 @@ export default async function HistoriquePage({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <Logo hauteur={40} />
+          <Logo hauteur={40} lien="/saisie" libelleLien={t.nav.accueil} />
           <div>
             <h1 style={{ fontSize: "1.05rem", margin: 0 }}>{t.historiquePage.titre}</h1>
             {profil && (

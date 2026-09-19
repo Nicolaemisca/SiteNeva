@@ -21,6 +21,7 @@ export const LANGUES: { valeur: Langue; libelle: string }[] = [
 
 export interface Dictionnaire {
   nav: {
+    accueil: string;
     saisie: string;
     historique: string;
     backOffice: string;
@@ -101,6 +102,7 @@ export interface Dictionnaire {
 
 const fr: Dictionnaire = {
   nav: {
+    accueil: "Accueil",
     saisie: "Saisie",
     historique: "Historique",
     backOffice: "Back-office",
@@ -182,6 +184,7 @@ const fr: Dictionnaire = {
 
 const ro: Dictionnaire = {
   nav: {
+    accueil: "Acasă",
     saisie: "Pontaj",
     historique: "Istoric",
     backOffice: "Administrare",

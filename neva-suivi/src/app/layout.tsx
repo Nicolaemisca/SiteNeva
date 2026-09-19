@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import "./globals.css";
+import { couleurs } from "@/lib/ui";
 
 export const metadata = {
   title: "Neva Energy — Suivi chantier",
@@ -17,7 +18,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           défiler la page (donne l'impression que le texte "bouge"). Les
           champs de saisie redeviennent explicitement sélectionnables via
           styleChamp (src/lib/ui.ts), sinon ils resteraient inutilisables. */}
-      <body style={{ WebkitUserSelect: "none", userSelect: "none" }}>{children}</body>
+      <body style={{ WebkitUserSelect: "none", userSelect: "none", background: couleurs.fondPage }}>
+        {children}
+      </body>
     </html>
   );
 }
