@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { dateDuJourBelge } from "@/lib/date";
 import { modifierSaisie } from "@/app/actions/saisies";
 import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
-import { ChampHeures } from "@/app/saisie/ChampHeures";
+import { ModeSaisieHeures } from "@/app/saisie/ModeSaisieHeures";
 import { SelectChantier } from "@/app/saisie/SelectChantier";
 
 const styleEtiquette = { fontWeight: 600, color: couleurs.texte } as const;
@@ -15,15 +15,28 @@ function estModifiable(date: string, aujourdHui: string): boolean {
   return diffJours <= 7;
 }
 
+type ParametresRecherche = {
+  erreur?: string;
+  date?: string;
+  chantier_id?: string;
+  mode?: string;
+  heures?: string;
+  heure_debut?: string;
+  heure_fin?: string;
+  pause_minutes?: string;
+  description?: string;
+  materiel?: string;
+};
+
 export default async function ModifierSaisiePage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ erreur?: string }>;
+  searchParams: Promise<ParametresRecherche>;
 }) {
   const { id } = await params;
-  const { erreur } = await searchParams;
+  const query = await searchParams;
   const supabase = await createClient();
 
   const {
@@ -35,7 +48,7 @@ export default async function ModifierSaisiePage({
   // sienne, traité ici comme un 404 plutôt que de fuiter l'information.
   const { data: saisie } = await supabase
     .from("saisies")
-    .select("id, date, chantier_id, heures, description, materiel")
+    .select("id, date, chantier_id, heures, heure_debut, heure_fin, pause_minutes, description, materiel")
     .eq("id", id)
     .single();
 
@@ -56,6 +69,19 @@ export default async function ModifierSaisiePage({
     .select("id, nom, client, latitude, longitude")
     .or(`statut.eq.actif,id.eq.${saisie.chantier_id}`)
     .order("nom");
+
+  // En cas d'erreur de soumission, l'action republie les champs saisis via
+  // l'URL (src/app/actions/saisies.ts) : ils priment sur les valeurs en
+  // base pour ne pas faire perdre la correction en cours.
+  const date = query.date ?? saisie.date;
+  const chantierId = query.chantier_id ?? saisie.chantier_id;
+  const modeInitial = (query.mode as "total" | "horaires" | undefined) ?? (saisie.heure_debut ? "horaires" : "total");
+  const heures = query.heures ?? String(saisie.heures);
+  const heureDebut = query.heure_debut ?? saisie.heure_debut ?? "";
+  const heureFin = query.heure_fin ?? saisie.heure_fin ?? "";
+  const pauseMinutes = query.pause_minutes ?? (saisie.pause_minutes != null ? String(saisie.pause_minutes) : "");
+  const description = query.description ?? saisie.description ?? "";
+  const materiel = query.materiel ?? saisie.materiel ?? "";
 
   return (
     <main
@@ -91,7 +117,7 @@ export default async function ModifierSaisiePage({
         </Link>
       </header>
 
-      {erreur && (
+      {query.erreur && (
         <p
           style={{
             color: couleurs.erreur,
@@ -102,7 +128,7 @@ export default async function ModifierSaisiePage({
             marginBottom: "1rem",
           }}
         >
-          {erreur}
+          {query.erreur}
         </p>
       )}
 
@@ -111,26 +137,32 @@ export default async function ModifierSaisiePage({
 
         <label style={{ display: "grid", gap: "0.35rem" }}>
           <span style={styleEtiquette}>Date</span>
-          <input name="date" type="date" defaultValue={saisie.date} required style={styleChamp} />
+          <input name="date" type="date" defaultValue={date} required style={styleChamp} />
         </label>
 
         <label style={{ display: "grid", gap: "0.35rem" }}>
           <span style={styleEtiquette}>Chantier</span>
-          <SelectChantier chantiers={chantiers ?? []} chantierIdInitial={saisie.chantier_id} />
+          <SelectChantier chantiers={chantiers ?? []} chantierIdInitial={chantierId} />
         </label>
 
         <div style={{ display: "grid", gap: "0.35rem" }}>
           <span id="etiquette-heures" style={styleEtiquette}>
             Heures
           </span>
-          <ChampHeures valeurInitiale={String(saisie.heures)} />
+          <ModeSaisieHeures
+            modeInitial={modeInitial}
+            valeurInitiale={heures}
+            debutInitial={heureDebut}
+            finInitial={heureFin}
+            pauseInitiale={pauseMinutes}
+          />
         </div>
 
         <label style={{ display: "grid", gap: "0.35rem" }}>
           <span style={styleEtiquette}>Description (optionnel)</span>
           <textarea
             name="description"
-            defaultValue={saisie.description ?? ""}
+            defaultValue={description}
             rows={3}
             style={{ ...styleChamp, minHeight: undefined, resize: "vertical" }}
           />
@@ -138,7 +170,7 @@ export default async function ModifierSaisiePage({
 
         <label style={{ display: "grid", gap: "0.35rem" }}>
           <span style={styleEtiquette}>Matériel utilisé (optionnel)</span>
-          <input name="materiel" type="text" defaultValue={saisie.materiel ?? ""} style={styleChamp} />
+          <input name="materiel" type="text" defaultValue={materiel} style={styleChamp} />
         </label>
 
         <button type="submit" style={styleBoutonPrimaire}>
