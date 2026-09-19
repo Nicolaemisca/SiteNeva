@@ -106,6 +106,7 @@ export default async function ModifierSaisiePage({
       <header
         style={{
           display: "flex",
+          flexWrap: "wrap",
           justifyContent: "space-between",
           alignItems: "center",
           gap: "0.75rem",
