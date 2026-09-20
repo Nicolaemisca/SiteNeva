@@ -1,4 +1,4 @@
-import { demanderReinitialisationMotDePasse, sendMagicLink, signInWithPassword } from "@/app/actions/auth";
+import { demanderReinitialisationMotDePasse, signInWithPassword } from "@/app/actions/auth";
 import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { Logo } from "@/components/Logo";
 import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
@@ -6,9 +6,9 @@ import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ erreur?: string; lien_envoye?: string; reinitialisation_envoyee?: string }>;
+  searchParams: Promise<{ erreur?: string; reinitialisation_envoyee?: string }>;
 }) {
-  const { erreur, lien_envoye, reinitialisation_envoyee } = await searchParams;
+  const { erreur, reinitialisation_envoyee } = await searchParams;
 
   // Cadre un peu plus compact que styleChamp pour les champs email/mot de
   // passe : demandé après test réel — styleChamp (48px/0.85rem) reste la
@@ -62,19 +62,6 @@ export default async function LoginPage({
           {erreur}
         </p>
       )}
-      {lien_envoye && (
-        <p
-          style={{
-            color: couleurs.succes,
-            background: couleurs.succesFond,
-            border: `1.5px solid ${couleurs.succes}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-          }}
-        >
-          Lien de connexion envoyé par email.
-        </p>
-      )}
       {reinitialisation_envoyee && (
         <p
           style={{
@@ -106,16 +93,6 @@ export default async function LoginPage({
         </label>
         <BoutonEnvoi style={{ ...styleBoutonPrimaire, marginTop: "0.25rem" }} texteEnCours="Connexion…">
           Se connecter
-        </BoutonEnvoi>
-      </form>
-
-      <form action={sendMagicLink} style={{ display: "grid", gap: "0.75rem", marginTop: "2rem" }}>
-        <label style={{ display: "grid", gap: "0.25rem" }}>
-          <span>Email (lien magique)</span>
-          <input name="email" type="email" autoComplete="email" required style={styleChampConnexion} />
-        </label>
-        <BoutonEnvoi style={styleBoutonSecondaire} texteEnCours="Envoi…">
-          Recevoir un lien de connexion
         </BoutonEnvoi>
       </form>
 

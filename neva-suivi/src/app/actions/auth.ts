@@ -19,32 +19,13 @@ export async function signInWithPassword(formData: FormData) {
   redirect("/");
 }
 
-export async function sendMagicLink(formData: FormData) {
-  const email = String(formData.get("email") ?? "");
-  const supabase = await createClient();
-
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
-    },
-  });
-
-  if (error) {
-    redirect(`/login?erreur=${encodeURIComponent(error.message)}`);
-  }
-
-  redirect("/login?lien_envoye=1");
-}
-
-// "Mot de passe oublié" : contrairement au lien magique (signInWithOtp), qui
-// connecte simplement sans jamais demander de mot de passe, une session
-// "recovery" (resetPasswordForEmail) dispense de fournir l'ancien mot de
-// passe pour en poser un nouveau — vérifié empiriquement, updateUser()
-// réussit sans current_password uniquement dans ce cas précis, alors que ce
-// projet l'exige normalement (GOTRUE_SECURITY_UPDATE_PASSWORD_REQUIRE_CURRENT_PASSWORD).
-// Le "next" redirige après l'échange de code vers l'écran de saisie du
-// nouveau mot de passe plutôt que directement dans l'application (src/app/auth/callback/route.ts).
+// "Mot de passe oublié" : une session "recovery" (resetPasswordForEmail)
+// dispense de fournir l'ancien mot de passe pour en poser un nouveau —
+// vérifié empiriquement, updateUser() réussit sans current_password
+// uniquement dans ce cas précis, alors que ce projet l'exige normalement
+// (GOTRUE_SECURITY_UPDATE_PASSWORD_REQUIRE_CURRENT_PASSWORD). Le "next"
+// redirige après l'échange de code vers l'écran de saisie du nouveau mot de
+// passe plutôt que directement dans l'application (src/app/auth/callback/route.ts).
 export async function demanderReinitialisationMotDePasse(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const supabase = await createClient();
