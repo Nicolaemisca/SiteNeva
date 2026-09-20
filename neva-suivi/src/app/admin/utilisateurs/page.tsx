@@ -1,5 +1,11 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { creerUtilisateur, basculerActivation, reinitialiserMotDePasse } from "@/app/actions/utilisateurs";
+import {
+  creerUtilisateur,
+  basculerActivation,
+  reinitialiserMotDePasse,
+  supprimerUtilisateur,
+} from "@/app/actions/utilisateurs";
 import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
 
 const styleTh = { textAlign: "left", padding: "0.5rem", borderBottom: `2px solid ${couleurs.bordure}` } as const;
@@ -43,6 +49,9 @@ export default async function UtilisateursAdminPage({
     .order("nom");
 
   const utilisateurs = (data ?? []) as Utilisateur[];
+  const utilisateurAConfirmer = params.confirmer_suppression
+    ? utilisateurs.find((u) => u.id === params.confirmer_suppression)
+    : null;
 
   return (
     <main>
@@ -77,6 +86,51 @@ export default async function UtilisateursAdminPage({
         >
           Statut du compte mis à jour.
         </p>
+      )}
+
+      {params.supprime && (
+        <p
+          style={{
+            color: couleurs.succes,
+            background: couleurs.succesFond,
+            border: `1.5px solid ${couleurs.succes}`,
+            borderRadius: 8,
+            padding: "0.75rem",
+            marginTop: "1rem",
+            fontWeight: 600,
+          }}
+        >
+          Compte supprimé.
+        </p>
+      )}
+
+      {utilisateurAConfirmer && (
+        <div
+          style={{
+            border: `1.5px solid ${couleurs.avertissement}`,
+            background: couleurs.avertissementFond,
+            borderRadius: 8,
+            padding: "0.85rem",
+            marginTop: "1rem",
+          }}
+        >
+          <p style={{ margin: 0 }}>
+            Supprimer définitivement <strong>{utilisateurAConfirmer.nom}</strong> ({utilisateurAConfirmer.email}) ?
+            Cette action est irréversible.
+          </p>
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem" }}>
+            <form action={supprimerUtilisateur}>
+              <input type="hidden" name="id" value={utilisateurAConfirmer.id} />
+              <input type="hidden" name="confirmer" value="1" />
+              <button type="submit" style={styleBoutonDanger}>
+                Confirmer la suppression
+              </button>
+            </form>
+            <Link href="/admin/utilisateurs" style={styleBoutonMini}>
+              Annuler
+            </Link>
+          </div>
+        </div>
       )}
 
       {params.cree && (
@@ -225,6 +279,12 @@ export default async function UtilisateursAdminPage({
                       <input type="hidden" name="actif" value={u.actif ? "0" : "1"} />
                       <button type="submit" style={u.actif ? styleBoutonDanger : styleBoutonMini}>
                         {u.actif ? "Désactiver" : "Réactiver"}
+                      </button>
+                    </form>
+                    <form action={supprimerUtilisateur}>
+                      <input type="hidden" name="id" value={u.id} />
+                      <button type="submit" style={styleBoutonDanger}>
+                        Supprimer
                       </button>
                     </form>
                   </div>
