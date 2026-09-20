@@ -1,4 +1,4 @@
-import { sendMagicLink, signInWithPassword } from "@/app/actions/auth";
+import { demanderReinitialisationMotDePasse, sendMagicLink, signInWithPassword } from "@/app/actions/auth";
 import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { Logo } from "@/components/Logo";
 import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
@@ -6,9 +6,9 @@ import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ erreur?: string; lien_envoye?: string }>;
+  searchParams: Promise<{ erreur?: string; lien_envoye?: string; reinitialisation_envoyee?: string }>;
 }) {
-  const { erreur, lien_envoye } = await searchParams;
+  const { erreur, lien_envoye, reinitialisation_envoyee } = await searchParams;
 
   // Cadre un peu plus compact que styleChamp pour les champs email/mot de
   // passe : demandé après test réel — styleChamp (48px/0.85rem) reste la
@@ -75,6 +75,19 @@ export default async function LoginPage({
           Lien de connexion envoyé par email.
         </p>
       )}
+      {reinitialisation_envoyee && (
+        <p
+          style={{
+            color: couleurs.succes,
+            background: couleurs.succesFond,
+            border: `1.5px solid ${couleurs.succes}`,
+            borderRadius: 8,
+            padding: "0.75rem",
+          }}
+        >
+          Si un compte existe avec cette adresse, un email a été envoyé pour choisir un nouveau mot de passe.
+        </p>
+      )}
 
       <form action={signInWithPassword} style={{ display: "grid", gap: "0.75rem", marginTop: "2rem" }}>
         <label style={{ display: "grid", gap: "0.25rem" }}>
@@ -103,6 +116,16 @@ export default async function LoginPage({
         </label>
         <BoutonEnvoi style={styleBoutonSecondaire} texteEnCours="Envoi…">
           Recevoir un lien de connexion
+        </BoutonEnvoi>
+      </form>
+
+      <form action={demanderReinitialisationMotDePasse} style={{ display: "grid", gap: "0.75rem", marginTop: "2rem" }}>
+        <label style={{ display: "grid", gap: "0.25rem" }}>
+          <span>Email (mot de passe oublié)</span>
+          <input name="email" type="email" autoComplete="email" required style={styleChampConnexion} />
+        </label>
+        <BoutonEnvoi style={styleBoutonSecondaire} texteEnCours="Envoi…">
+          Choisir un nouveau mot de passe
         </BoutonEnvoi>
       </form>
     </main>

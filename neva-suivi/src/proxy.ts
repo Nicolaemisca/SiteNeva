@@ -50,7 +50,13 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/auth/callback");
 
-  const isChangementMotDePasse = request.nextUrl.pathname.startsWith("/changer-mot-de-passe");
+  // /reinitialiser-mot-de-passe (mot de passe oublié) doit aussi être
+  // exempté : un compte créé avec un mot de passe initial pourrait s'en
+  // servir au lieu de /changer-mot-de-passe, et lève le même drapeau au
+  // passage (src/app/actions/motDePasse.ts).
+  const isChangementMotDePasse =
+    request.nextUrl.pathname.startsWith("/changer-mot-de-passe") ||
+    request.nextUrl.pathname.startsWith("/reinitialiser-mot-de-passe");
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
