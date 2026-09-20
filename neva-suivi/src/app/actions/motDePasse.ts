@@ -57,3 +57,48 @@ export async function changerMotDePasseInitial(formData: FormData) {
 
   redirect("/saisie");
 }
+
+// "Mot de passe oublié" (src/app/actions/auth.ts,
+// demanderReinitialisationMotDePasse) : la session ici vient d'un lien de
+// récupération envoyé par email, pas d'une connexion classique — pas de
+// champ mot de passe actuel à demander, updateUser() ne l'exige pas dans ce
+// cas précis (vérifié empiriquement, contrairement à changerMotDePasseInitial
+// ci-dessus). Lève aussi mot_de_passe_a_changer au passage (sans effet si
+// déjà à false) : cette voie satisfait tout autant l'obligation de la
+// consigne 11 que l'écran dédié.
+export async function definirNouveauMotDePasse(formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const motDePasse = String(formData.get("mot_de_passe") ?? "");
+  const confirmation = String(formData.get("confirmation") ?? "");
+
+  if (motDePasse.length < 8) {
+    redirect(
+      `/reinitialiser-mot-de-passe?erreur=${encodeURIComponent("Le mot de passe doit faire au moins 8 caractères.")}`
+    );
+  }
+
+  if (motDePasse !== confirmation) {
+    redirect(
+      `/reinitialiser-mot-de-passe?erreur=${encodeURIComponent("Les deux mots de passe ne correspondent pas.")}`
+    );
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: motDePasse });
+
+  if (error) {
+    redirect(`/reinitialiser-mot-de-passe?erreur=${encodeURIComponent(error.message)}`);
+  }
+
+  await supabase.rpc("confirmer_changement_mot_de_passe");
+
+  redirect("/saisie");
+}
