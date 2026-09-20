@@ -48,7 +48,12 @@ export async function proxy(request: NextRequest) {
 
   const isPublicRoute =
     request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/auth/callback");
+    request.nextUrl.pathname.startsWith("/auth/callback") ||
+    // Pas encore de session au moment où cette route s'exécute (l'échange du
+    // code a lieu dans son propre handler, après ce middleware) : sans cette
+    // exemption, le proxy redirigerait vers /login avant même que le
+    // handler ait pu échanger le code recu par email.
+    request.nextUrl.pathname.startsWith("/auth/recuperation");
 
   // /reinitialiser-mot-de-passe (mot de passe oublié) doit aussi être
   // exempté : un compte créé avec un mot de passe initial pourrait s'en

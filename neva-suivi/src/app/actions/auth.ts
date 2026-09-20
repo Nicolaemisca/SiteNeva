@@ -23,15 +23,16 @@ export async function signInWithPassword(formData: FormData) {
 // dispense de fournir l'ancien mot de passe pour en poser un nouveau —
 // vérifié empiriquement, updateUser() réussit sans current_password
 // uniquement dans ce cas précis, alors que ce projet l'exige normalement
-// (GOTRUE_SECURITY_UPDATE_PASSWORD_REQUIRE_CURRENT_PASSWORD). Le "next"
-// redirige après l'échange de code vers l'écran de saisie du nouveau mot de
-// passe plutôt que directement dans l'application (src/app/auth/callback/route.ts).
+// (GOTRUE_SECURITY_UPDATE_PASSWORD_REQUIRE_CURRENT_PASSWORD). Redirige vers
+// /auth/recuperation (route dédiée, pas /auth/callback avec un ?next= —
+// voir le commentaire de src/app/auth/recuperation/route.ts pour le bug que
+// ça évite).
 export async function demanderReinitialisationMotDePasse(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const supabase = await createClient();
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=${encodeURIComponent("/reinitialiser-mot-de-passe")}`,
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/recuperation`,
   });
 
   if (error) {

@@ -5,8 +5,8 @@ import { Logo } from "@/components/Logo";
 import { couleurs, styleBoutonPrimaire, styleChamp } from "@/lib/ui";
 
 // Atteint uniquement via le lien "mot de passe oublié" (email ->
-// /auth/callback?next=/reinitialiser-mot-de-passe -> ici), jamais depuis un
-// menu : la session vient d'un lien de récupération, pas d'un login normal.
+// /auth/recuperation -> ici), jamais depuis un menu : la session vient d'un
+// lien de récupération, pas d'un login normal.
 // Reste en français, même règle que /login : pas encore d'accès normal à
 // l'application, donc pas de préférence de langue à appliquer (cahier
 // consigne 8).
