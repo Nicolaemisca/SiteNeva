@@ -130,9 +130,14 @@ export default async function SaisiePage({
             {t.nav.profil}
           </Link>
           {profil?.role === "admin" && (
-            <Link href="/admin/chantiers" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.85rem" }}>
-              {t.nav.backOffice}
-            </Link>
+            <>
+              <Link href="/pointage" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.85rem" }}>
+                Pointage
+              </Link>
+              <Link href="/admin/chantiers" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.85rem" }}>
+                {t.nav.backOffice}
+              </Link>
+            </>
           )}
           <form action={signOut}>
             <button
