@@ -140,13 +140,13 @@ export function ModeSaisieHeures({
         </div>
       ) : (
         <div style={{ display: "grid", gap: "0.5rem" }}>
-          {/* step=900 (15 min en secondes) : le picker natif (roue iOS,
-              horloge Android) ne propose plus que :00/:15/:30/:45 pour les
-              minutes — même règle pour tous les comptes, cette page est
-              partagée technicien/admin. Sur PC le pas agit surtout sur les
-              flèches du spinner natif, moins visible qu'un menu déroulant,
-              mais c'est le rendu préféré (un seul champ compact, comme
-              avant) plutôt que deux select heure/minutes séparés. */}
+          {/* Champ natif inchangé visuellement (step=900 pour le picker
+              mobile — roue iOS/horloge Android), mais le navigateur
+              n'empêche pas forcément la saisie libre au clavier/spinner sur
+              PC : l'arrondi au quart d'heure se fait donc aussi à
+              l'onChange, pour garantir :00/:15/:30/:45 quel que soit le
+              navigateur — même règle pour tous les comptes, cette page est
+              partagée technicien/admin. */}
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <label style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
               <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{t.modeHeures.debut}</span>
@@ -156,7 +156,7 @@ export function ModeSaisieHeures({
                 step={900}
                 required
                 value={debut}
-                onChange={(e) => setDebut(e.target.value)}
+                onChange={(e) => setDebut(arrondirQuartHeure(e.target.value))}
                 style={styleChamp}
               />
             </label>
@@ -168,7 +168,7 @@ export function ModeSaisieHeures({
                 step={900}
                 required
                 value={fin}
-                onChange={(e) => setFin(e.target.value)}
+                onChange={(e) => setFin(arrondirQuartHeure(e.target.value))}
                 style={styleChamp}
               />
             </label>
