@@ -3,9 +3,10 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { dateDuJourBelge } from "@/lib/date";
 import { modifierSaisie } from "@/app/actions/saisies";
-import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
+import { couleurs, ombre, rayon, styleBoutonPrimaire, styleBoutonSecondaire, styleCarte, styleChamp } from "@/lib/ui";
 import { ModeSaisieHeures } from "@/app/saisie/ModeSaisieHeures";
 import { SelectChantier } from "@/app/saisie/SelectChantier";
+import { Alerte } from "@/components/Alerte";
 import { Logo } from "@/components/Logo";
 import { dictionnaires, estLangueValide } from "@/lib/i18n/dictionnaires";
 
@@ -98,7 +99,7 @@ export default async function ModifierSaisiePage({
         paddingBottom: "3rem",
         paddingLeft: "1.5rem",
         paddingRight: "1rem",
-        fontFamily: "sans-serif",
+        fontFamily: "var(--font-sans), sans-serif",
         color: couleurs.texte,
         background: couleurs.fondPage,
       }}
@@ -111,8 +112,15 @@ export default async function ModifierSaisiePage({
           alignItems: "center",
           gap: "0.75rem",
           marginBottom: "1.5rem",
-          paddingBottom: "1rem",
-          borderBottom: `1.5px solid ${couleurs.bordure}`,
+          marginLeft: "-1.5rem",
+          marginRight: "-1rem",
+          padding: "0.85rem 1rem 0.85rem 1.5rem",
+          background: couleurs.fond,
+          borderRadius: `0 0 ${rayon.moyen}px ${rayon.moyen}px`,
+          boxShadow: ombre.legere,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
@@ -128,21 +136,12 @@ export default async function ModifierSaisiePage({
       </header>
 
       {query.erreur && (
-        <p
-          style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-            marginBottom: "1rem",
-          }}
-        >
-          {query.erreur}
-        </p>
+        <div style={{ marginBottom: "1rem" }}>
+          <Alerte variante="erreur">{query.erreur}</Alerte>
+        </div>
       )}
 
-      <form action={modifierSaisie} style={{ display: "grid", gap: "1.25rem" }}>
+      <form action={modifierSaisie} style={{ ...styleCarte, display: "grid", gap: "1.25rem", padding: "1.5rem" }}>
         <input type="hidden" name="id" value={saisie.id} />
 
         <label style={{ display: "grid", gap: "0.35rem" }}>

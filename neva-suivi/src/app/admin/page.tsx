@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { dateDuJourBelge } from "@/lib/date";
-import { couleurs, PALETTE_CATEGORIELLE } from "@/lib/ui";
+import { couleurs, ombre, PALETTE_CATEGORIELLE, rayon, styleCarte } from "@/lib/ui";
 
 const NOMS_JOURS = ["L", "M", "M", "J", "V", "S", "D"];
 
@@ -127,15 +127,10 @@ export default async function DashboardAdminPage({
         </p>
       )}
 
-      <section
-        style={{
-          background: couleurs.fond,
-          border: `1.5px solid ${couleurs.bordure}`,
-          borderRadius: 8,
-          padding: "1rem",
-          maxWidth: 520,
-        }}
-      >
+      {/* Deux colonnes sur grand écran (PC), empilées sur petit écran (gsm) :
+          auto-fit + minmax fait le travail sans media query à maintenir. */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "1.5rem", alignItems: "start" }}>
+      <section style={{ ...styleCarte, padding: "1.25rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
           <Link href={`/admin?mois=${versParamMois(anneePrec, moisPrec)}`} aria-label="Mois précédent" style={{ color: couleurs.primaire, fontWeight: 700, textDecoration: "none", padding: "0.25rem 0.5rem" }}>
             ‹
@@ -243,16 +238,7 @@ export default async function DashboardAdminPage({
         </p>
       </section>
 
-      <section
-        style={{
-          background: couleurs.fond,
-          border: `1.5px solid ${couleurs.bordure}`,
-          borderRadius: 8,
-          padding: "1rem",
-          maxWidth: 640,
-          marginTop: "1.5rem",
-        }}
-      >
+      <section style={{ ...styleCarte, padding: "1.25rem" }}>
         <h2 style={{ fontSize: "0.95rem", margin: "0 0 0.75rem" }}>Heures par chantier</h2>
 
         {erreurChantiers && (
@@ -311,6 +297,7 @@ export default async function DashboardAdminPage({
           })}
         </div>
       </section>
+      </div>
     </main>
   );
 }

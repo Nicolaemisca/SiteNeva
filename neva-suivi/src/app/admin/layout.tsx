@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { signOut } from "@/app/actions/auth";
-import { couleurs, styleBoutonSecondaire } from "@/lib/ui";
+import { couleurs, ombre, styleBoutonSecondaire } from "@/lib/ui";
 
 // Garde d'accès unique pour tout /admin/* : les pages filles n'ont plus à
 // revérifier le rôle, seulement le layout (rendu avant elles dans le même
@@ -13,7 +13,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const { profil } = await requireAdmin();
 
   return (
-    <div style={{ fontFamily: "sans-serif" }}>
+    <div style={{ fontFamily: "var(--font-sans), sans-serif" }}>
       <header
         style={{
           display: "flex",
@@ -22,30 +22,37 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           flexWrap: "wrap",
           gap: "0.75rem",
           padding: "1rem 1rem 1rem 1.5rem",
-          borderBottom: `1.5px solid ${couleurs.bordure}`,
+          background: couleurs.fond,
+          boxShadow: ombre.legere,
+          position: "sticky",
+          top: 0,
+          zIndex: 20,
         }}
       >
-        <nav style={{ display: "flex", gap: "0.5rem" }}>
-          <Link href="/admin" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
+        {/* Défilement horizontal plutôt qu'un retour à la ligne sur petit
+            écran (cahier : "adapté au gsm") — plus lisible que plusieurs
+            rangées de boutons empilées sur un téléphone étroit. */}
+        <nav style={{ display: "flex", gap: "0.5rem", overflowX: "auto", WebkitOverflowScrolling: "touch", flex: "1 1 auto", minWidth: 0 }}>
+          <Link href="/admin" style={{ ...styleBoutonSecondaire, flexShrink: 0, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
             Tableau de bord
           </Link>
-          <Link href="/admin/chantiers" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
+          <Link href="/admin/chantiers" style={{ ...styleBoutonSecondaire, flexShrink: 0, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
             Chantiers
           </Link>
-          <Link href="/admin/saisies" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
+          <Link href="/admin/saisies" style={{ ...styleBoutonSecondaire, flexShrink: 0, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
             Saisies
           </Link>
-          <Link href="/admin/utilisateurs" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
+          <Link href="/admin/utilisateurs" style={{ ...styleBoutonSecondaire, flexShrink: 0, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
             Utilisateurs
           </Link>
-          <Link href="/pointage" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
+          <Link href="/pointage" style={{ ...styleBoutonSecondaire, flexShrink: 0, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
             Pointage
           </Link>
-          <Link href="/saisie" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
+          <Link href="/saisie" style={{ ...styleBoutonSecondaire, flexShrink: 0, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
             Ma saisie
           </Link>
         </nav>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexShrink: 0 }}>
           <span style={{ fontSize: "0.9rem", color: couleurs.texteAttenue }}>{profil.nom}</span>
           <form action={signOut}>
             <button

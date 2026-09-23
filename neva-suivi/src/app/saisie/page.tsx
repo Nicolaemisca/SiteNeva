@@ -3,11 +3,12 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { creerSaisie } from "@/app/actions/saisies";
 import { signOut } from "@/app/actions/auth";
+import { Alerte } from "@/components/Alerte";
 import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { Logo } from "@/components/Logo";
 import { dateDuJourBelge } from "@/lib/date";
 import { calculerSuggestion } from "@/lib/suggestionSaisie";
-import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
+import { couleurs, ombre, rayon, styleBoutonPrimaire, styleBoutonSecondaire, styleCarte, styleChamp } from "@/lib/ui";
 import { dictionnaires, estLangueValide } from "@/lib/i18n/dictionnaires";
 import { ModeSaisieHeures } from "./ModeSaisieHeures";
 import { SelectChantier } from "./SelectChantier";
@@ -88,7 +89,7 @@ export default async function SaisiePage({
         paddingBottom: "3rem",
         paddingLeft: "1.5rem",
         paddingRight: "1rem",
-        fontFamily: "sans-serif",
+        fontFamily: "var(--font-sans), sans-serif",
         color: couleurs.texte,
         background: couleurs.fondPage,
       }}
@@ -101,8 +102,15 @@ export default async function SaisiePage({
           alignItems: "center",
           gap: "0.75rem",
           marginBottom: "1.5rem",
-          paddingBottom: "1rem",
-          borderBottom: `1.5px solid ${couleurs.bordure}`,
+          marginLeft: "-1.5rem",
+          marginRight: "-1rem",
+          padding: "0.85rem 1rem 0.85rem 1.5rem",
+          background: couleurs.fond,
+          borderRadius: `0 0 ${rayon.moyen}px ${rayon.moyen}px`,
+          boxShadow: ombre.legere,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
@@ -160,68 +168,21 @@ export default async function SaisiePage({
       </header>
 
       {params.envoye && (
-        <div
-          className="apparition-douce"
-          role="status"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.65rem",
-            color: couleurs.succes,
-            background: couleurs.succesFond,
-            border: `1.5px solid ${couleurs.succes}`,
-            borderRadius: 8,
-            padding: "1rem",
-            marginBottom: "0.5rem",
-            fontWeight: 700,
-            fontSize: "1.05rem",
-          }}
-        >
-          <span
-            aria-hidden
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 26,
-              height: 26,
-              borderRadius: "50%",
-              background: couleurs.succes,
-              color: "#fff",
-              fontSize: "1rem",
-              flexShrink: 0,
-            }}
-          >
-            ✓
-          </span>
-          {t.saisiePage.saisieEnregistree}
+        <div style={{ marginBottom: "0.5rem" }}>
+          <Alerte variante="succes">{t.saisiePage.saisieEnregistree}</Alerte>
         </div>
       )}
       {params.erreur && (
-        <p
-          style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-          }}
-        >
-          {params.erreur}
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="erreur">{params.erreur}</Alerte>
+        </div>
       )}
       {erreurChantiers && (
-        <p
-          style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-          }}
-        >
-          {t.saisiePage.erreurChargementChantiers} : {erreurChantiers.message}
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="erreur">
+            {t.saisiePage.erreurChargementChantiers} : {erreurChantiers.message}
+          </Alerte>
+        </div>
       )}
 
       {params.doublon && (
@@ -282,7 +243,7 @@ export default async function SaisiePage({
         </div>
       )}
 
-      <form action={creerSaisie} style={{ display: "grid", gap: "1.25rem" }}>
+      <form action={creerSaisie} style={{ ...styleCarte, display: "grid", gap: "1.25rem", padding: "1.5rem" }}>
         <label style={{ display: "grid", gap: "0.35rem" }}>
           <span style={styleEtiquette}>{t.champs.date}</span>
           <input name="date" type="date" defaultValue={date} required style={styleChamp} />

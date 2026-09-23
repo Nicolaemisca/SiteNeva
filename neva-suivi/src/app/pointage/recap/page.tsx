@@ -2,10 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { cloturerPointage } from "@/app/actions/pointage";
+import { Alerte } from "@/components/Alerte";
 import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { dateDuJourBelge } from "@/lib/date";
 import { calculerRecapPointage, type PointageBrut } from "@/lib/recapPointage";
-import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire } from "@/lib/ui";
+import { couleurs, rayon, styleBoutonPrimaire, styleBoutonSecondaire, styleCarte } from "@/lib/ui";
 
 // L'heure de clôture est figée ICI, au rendu de l'aperçu — et transmise à
 // l'action via un champ caché — pour que le total affiché et le total
@@ -52,7 +53,7 @@ export default async function RecapPointagePage({
         paddingBottom: "3rem",
         paddingLeft: "1.5rem",
         paddingRight: "1rem",
-        fontFamily: "sans-serif",
+        fontFamily: "var(--font-sans), sans-serif",
         color: couleurs.texte,
         background: couleurs.fondPage,
       }}
@@ -65,18 +66,9 @@ export default async function RecapPointagePage({
       </p>
 
       {params.erreur && (
-        <p
-          style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-            marginBottom: "1.25rem",
-          }}
-        >
-          {params.erreur}
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="erreur">{params.erreur}</Alerte>
+        </div>
       )}
 
       {recap.length === 0 ? (
@@ -84,16 +76,15 @@ export default async function RecapPointagePage({
           Durée nulle sur tous les chantiers pointés — rien à enregistrer.
         </p>
       ) : (
-        <div style={{ display: "grid", gap: "0.5rem", marginBottom: "1.5rem" }}>
+        <div style={{ ...styleCarte, padding: "1rem", display: "grid", gap: "0.5rem", marginBottom: "1.5rem" }}>
           {recap.map((ligne) => (
             <div
               key={ligne.chantierId}
               style={{
                 display: "flex",
                 justifyContent: "space-between",
-                background: couleurs.fond,
-                border: `1.5px solid ${couleurs.bordure}`,
-                borderRadius: 8,
+                background: couleurs.fondPage,
+                borderRadius: rayon.petit,
                 padding: "0.65rem 0.85rem",
               }}
             >
@@ -108,6 +99,9 @@ export default async function RecapPointagePage({
               padding: "0.5rem 0.85rem",
               fontWeight: 700,
               color: couleurs.primaire,
+              borderTop: `1px solid ${couleurs.bordureDouce}`,
+              marginTop: "0.25rem",
+              paddingTop: "0.75rem",
             }}
           >
             <span>Total</span>

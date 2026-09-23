@@ -2,10 +2,11 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { signOut } from "@/app/actions/auth";
 import { enregistrerArrivee, supprimerPointage } from "@/app/actions/pointage";
+import { Alerte } from "@/components/Alerte";
 import { Logo } from "@/components/Logo";
 import { SelectChantier } from "@/app/saisie/SelectChantier";
 import { dateDuJourBelge } from "@/lib/date";
-import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire } from "@/lib/ui";
+import { couleurs, ombre, rayon, styleBoutonPrimaire, styleBoutonSecondaire, styleCarte } from "@/lib/ui";
 import { BoutonArrivee } from "./BoutonArrivee";
 
 const styleEtiquette = { fontWeight: 600, color: couleurs.texte } as const;
@@ -54,7 +55,7 @@ export default async function PointagePage({
         paddingBottom: "3rem",
         paddingLeft: "1.5rem",
         paddingRight: "1rem",
-        fontFamily: "sans-serif",
+        fontFamily: "var(--font-sans), sans-serif",
         color: couleurs.texte,
         background: couleurs.fondPage,
       }}
@@ -67,8 +68,15 @@ export default async function PointagePage({
           alignItems: "center",
           gap: "0.75rem",
           marginBottom: "1.5rem",
-          paddingBottom: "1rem",
-          borderBottom: `1.5px solid ${couleurs.bordure}`,
+          marginLeft: "-1.5rem",
+          marginRight: "-1rem",
+          padding: "0.85rem 1rem 0.85rem 1.5rem",
+          background: couleurs.fond,
+          borderRadius: `0 0 ${rayon.moyen}px ${rayon.moyen}px`,
+          boxShadow: ombre.legere,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
@@ -103,70 +111,32 @@ export default async function PointagePage({
       </header>
 
       {params.enregistre && (
-        <p
-          role="status"
-          style={{
-            color: couleurs.succes,
-            background: couleurs.succesFond,
-            border: `1.5px solid ${couleurs.succes}`,
-            borderRadius: 8,
-            padding: "0.85rem",
-            marginBottom: "1.25rem",
-            fontWeight: 700,
-          }}
-        >
-          Arrivée pointée.
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="succes">Arrivée pointée.</Alerte>
+        </div>
       )}
       {params.supprime && (
         <p style={{ color: couleurs.texteAttenue, marginBottom: "1.25rem" }}>Pointage supprimé.</p>
       )}
       {params.journee_cloturee && (
-        <p
-          role="status"
-          style={{
-            color: couleurs.succes,
-            background: couleurs.succesFond,
-            border: `1.5px solid ${couleurs.succes}`,
-            borderRadius: 8,
-            padding: "0.85rem",
-            marginBottom: "1.25rem",
-            fontWeight: 700,
-          }}
-        >
-          Journée clôturée : les heures ont été ajoutées à tes saisies du jour.
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="succes">Journée clôturée : les heures ont été ajoutées à tes saisies du jour.</Alerte>
+        </div>
       )}
       {params.erreur && (
-        <p
-          style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-            marginBottom: "1.25rem",
-          }}
-        >
-          {params.erreur}
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="erreur">{params.erreur}</Alerte>
+        </div>
       )}
       {(erreurChantiers || erreurPointages) && (
-        <p
-          style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-            marginBottom: "1.25rem",
-          }}
-        >
-          Erreur de chargement : {(erreurChantiers ?? erreurPointages)?.message}
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="erreur">
+            Erreur de chargement : {(erreurChantiers ?? erreurPointages)?.message}
+          </Alerte>
+        </div>
       )}
 
-      <form action={enregistrerArrivee} style={{ display: "grid", gap: "1rem", marginBottom: "2rem" }}>
+      <form action={enregistrerArrivee} style={{ ...styleCarte, display: "grid", gap: "1rem", padding: "1.25rem", marginBottom: "2rem" }}>
         <label style={{ display: "grid", gap: "0.35rem" }}>
           <span style={styleEtiquette}>Chantier</span>
           <SelectChantier chantiers={chantiers ?? []} chantierIdInitial="" langue="fr" />
@@ -190,8 +160,9 @@ export default async function PointagePage({
                 alignItems: "center",
                 gap: "0.5rem",
                 background: couleurs.fond,
-                border: `1.5px solid ${couleurs.bordure}`,
-                borderRadius: 8,
+                border: `1px solid ${couleurs.bordureDouce}`,
+                borderRadius: rayon.petit,
+                boxShadow: ombre.legere,
                 padding: "0.65rem 0.85rem",
               }}
             >

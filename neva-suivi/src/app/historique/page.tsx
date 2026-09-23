@@ -2,8 +2,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { dateDuJourBelge } from "@/lib/date";
+import { Alerte } from "@/components/Alerte";
 import { Logo } from "@/components/Logo";
-import { couleurs, styleBoutonSecondaire } from "@/lib/ui";
+import { couleurs, ombre, rayon, styleBoutonSecondaire } from "@/lib/ui";
 import { dictionnaires, estLangueValide, type Langue } from "@/lib/i18n/dictionnaires";
 
 const MOIS_REGEX = /^\d{4}-\d{2}$/;
@@ -138,7 +139,7 @@ export default async function HistoriquePage({
         paddingBottom: "3rem",
         paddingLeft: "1.5rem",
         paddingRight: "1rem",
-        fontFamily: "sans-serif",
+        fontFamily: "var(--font-sans), sans-serif",
         color: couleurs.texte,
         background: couleurs.fondPage,
       }}
@@ -151,8 +152,15 @@ export default async function HistoriquePage({
           alignItems: "center",
           gap: "0.75rem",
           marginBottom: "1.5rem",
-          paddingBottom: "1rem",
-          borderBottom: `1.5px solid ${couleurs.bordure}`,
+          marginLeft: "-1.5rem",
+          marginRight: "-1rem",
+          padding: "0.85rem 1rem 0.85rem 1.5rem",
+          background: couleurs.fond,
+          borderRadius: `0 0 ${rayon.moyen}px ${rayon.moyen}px`,
+          boxShadow: ombre.legere,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
@@ -223,41 +231,27 @@ export default async function HistoriquePage({
       </div>
 
       {modifie && (
-        <p
-          style={{
-            color: couleurs.succes,
-            background: couleurs.succesFond,
-            border: `1.5px solid ${couleurs.succes}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-            fontWeight: 600,
-          }}
-        >
-          {t.historiquePage.saisieModifiee}
-        </p>
+        <div style={{ marginBottom: "1rem" }}>
+          <Alerte variante="succes">{t.historiquePage.saisieModifiee}</Alerte>
+        </div>
       )}
 
       {error && (
-        <p
-          style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-          }}
-        >
-          {t.historiquePage.erreurChargement} : {error.message}
-        </p>
+        <div style={{ marginBottom: "1rem" }}>
+          <Alerte variante="erreur">
+            {t.historiquePage.erreurChargement} : {error.message}
+          </Alerte>
+        </div>
       )}
 
       <div
         style={{
-          background: couleurs.primaire,
+          background: `linear-gradient(155deg, ${couleurs.primaire}, ${couleurs.primaireProfond})`,
           color: couleurs.primaireTexte,
-          borderRadius: 8,
+          borderRadius: rayon.moyen,
           padding: "0.85rem 1rem",
           marginBottom: "1.5rem",
+          boxShadow: ombre.legere,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "baseline",
@@ -297,10 +291,12 @@ export default async function HistoriquePage({
                     <div
                       key={s.id}
                       style={{
-                        border: `1.5px solid ${couleurs.bordure}`,
+                        background: couleurs.fond,
+                        border: `1px solid ${couleurs.bordureDouce}`,
                         borderLeftWidth: 4,
-                        borderLeftColor: modifiable ? couleurs.primaire : couleurs.bordure,
-                        borderRadius: 8,
+                        borderLeftColor: modifiable ? couleurs.primaire : couleurs.bordureDouce,
+                        borderRadius: rayon.petit,
+                        boxShadow: ombre.legere,
                         padding: "0.75rem 0.85rem",
                       }}
                     >

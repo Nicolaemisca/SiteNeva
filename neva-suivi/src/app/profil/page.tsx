@@ -2,8 +2,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { modifierLangue } from "@/app/actions/profil";
+import { Alerte } from "@/components/Alerte";
 import { Logo } from "@/components/Logo";
-import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
+import { couleurs, ombre, rayon, styleBoutonPrimaire, styleBoutonSecondaire, styleCarte, styleChamp } from "@/lib/ui";
 import { dictionnaires, estLangueValide, LANGUES } from "@/lib/i18n/dictionnaires";
 
 const styleEtiquette = { fontWeight: 600, color: couleurs.texte } as const;
@@ -37,7 +38,7 @@ export default async function ProfilPage({
         paddingBottom: "3rem",
         paddingLeft: "1.5rem",
         paddingRight: "1rem",
-        fontFamily: "sans-serif",
+        fontFamily: "var(--font-sans), sans-serif",
         color: couleurs.texte,
         background: couleurs.fondPage,
       }}
@@ -50,8 +51,15 @@ export default async function ProfilPage({
           alignItems: "center",
           gap: "0.75rem",
           marginBottom: "1.5rem",
-          paddingBottom: "1rem",
-          borderBottom: `1.5px solid ${couleurs.bordure}`,
+          marginLeft: "-1.5rem",
+          marginRight: "-1rem",
+          padding: "0.85rem 1rem 0.85rem 1.5rem",
+          background: couleurs.fond,
+          borderRadius: `0 0 ${rayon.moyen}px ${rayon.moyen}px`,
+          boxShadow: ombre.legere,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
@@ -67,66 +75,49 @@ export default async function ProfilPage({
       </header>
 
       {enregistre && (
-        <p
-          style={{
-            color: couleurs.succes,
-            background: couleurs.succesFond,
-            border: `1.5px solid ${couleurs.succes}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-            fontWeight: 600,
-            marginBottom: "1.25rem",
-          }}
-        >
-          {t.profilPage.langueEnregistree}
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="succes">{t.profilPage.langueEnregistree}</Alerte>
+        </div>
       )}
 
       {erreur && (
-        <p
-          style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-            marginBottom: "1.25rem",
-          }}
-        >
-          {erreur}
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="erreur">{erreur}</Alerte>
+        </div>
       )}
 
-      <div style={{ display: "grid", gap: "1.25rem", marginBottom: "1.5rem" }}>
-        <div style={{ display: "grid", gap: "0.35rem" }}>
-          <span style={styleEtiquette}>{t.profilPage.nom}</span>
-          <span>{profil?.nom ?? "—"}</span>
+      <div style={{ ...styleCarte, padding: "1.5rem" }}>
+        <div style={{ display: "grid", gap: "1.25rem", marginBottom: "1.5rem" }}>
+          <div style={{ display: "grid", gap: "0.35rem" }}>
+            <span style={styleEtiquette}>{t.profilPage.nom}</span>
+            <span>{profil?.nom ?? "—"}</span>
+          </div>
+          <div style={{ display: "grid", gap: "0.35rem" }}>
+            <span style={styleEtiquette}>{t.profilPage.email}</span>
+            <span>{user.email}</span>
+          </div>
+          <div style={{ display: "grid", gap: "0.35rem" }}>
+            <span style={styleEtiquette}>{t.profilPage.role}</span>
+            <span>{profil?.role === "admin" ? t.profilPage.roleAdmin : t.profilPage.roleTechnicien}</span>
+          </div>
         </div>
-        <div style={{ display: "grid", gap: "0.35rem" }}>
-          <span style={styleEtiquette}>{t.profilPage.email}</span>
-          <span>{user.email}</span>
-        </div>
-        <div style={{ display: "grid", gap: "0.35rem" }}>
-          <span style={styleEtiquette}>{t.profilPage.role}</span>
-          <span>{profil?.role === "admin" ? t.profilPage.roleAdmin : t.profilPage.roleTechnicien}</span>
-        </div>
-      </div>
 
-      <form action={modifierLangue} style={{ display: "grid", gap: "1rem" }}>
-        <label style={{ display: "grid", gap: "0.35rem" }}>
-          <span style={styleEtiquette}>{t.profilPage.langue}</span>
-          <select name="langue" defaultValue={langue} style={styleChamp}>
-            {LANGUES.map((l) => (
-              <option key={l.valeur} value={l.valeur}>
-                {l.libelle}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="submit" style={styleBoutonPrimaire}>
-          {t.profilPage.enregistrer}
-        </button>
-      </form>
+        <form action={modifierLangue} style={{ display: "grid", gap: "1rem" }}>
+          <label style={{ display: "grid", gap: "0.35rem" }}>
+            <span style={styleEtiquette}>{t.profilPage.langue}</span>
+            <select name="langue" defaultValue={langue} style={styleChamp}>
+              {LANGUES.map((l) => (
+                <option key={l.valeur} value={l.valeur}>
+                  {l.libelle}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="submit" style={styleBoutonPrimaire}>
+            {t.profilPage.enregistrer}
+          </button>
+        </form>
+      </div>
     </main>
   );
 }
