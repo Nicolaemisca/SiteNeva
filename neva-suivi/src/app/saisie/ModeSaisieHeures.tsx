@@ -9,23 +9,6 @@ import { dictionnaires, type Langue } from "@/lib/i18n/dictionnaires";
 // reste disponible pour affiner. Chiffres seuls : pas de texte à traduire.
 const PRESETS = [8, 9, 10, 11];
 
-// Deux select natifs (heure, minutes) plutôt qu'un <input type="time"> :
-// l'attribut step="900" du time natif ne se voit pas forcément (spinner
-// discret sur PC, comportement inégal selon navigateur/OS) — un vrai menu
-// déroulant est sans ambiguïté, sur téléphone comme sur PC (même logique
-// que le menu de pause juste en dessous). Minutes limitées au quart d'heure
-// pour tous les comptes, cette page étant partagée technicien/admin.
-const HEURES = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
-const MINUTES = ["00", "15", "30", "45"];
-
-function heurePart(hhmm: string): string {
-  return hhmm.split(":")[0] ?? "";
-}
-
-function minutePart(hhmm: string): string {
-  return hhmm.split(":")[1] ?? "";
-}
-
 // Une valeur initiale (suggestion basée sur d'anciennes saisies, ou
 // republication après erreur) peut tomber hors grille — les saisies faites
 // avant ce changement n'étaient pas au quart d'heure près. On arrondit une
@@ -157,84 +140,38 @@ export function ModeSaisieHeures({
         </div>
       ) : (
         <div style={{ display: "grid", gap: "0.5rem" }}>
-          {/* required n'a pas d'effet sur un champ hidden (hors validation de
-              contrainte du navigateur) : la présence/absence est de toute
-              façon revérifiée côté serveur (lireChampsHeures,
-              src/app/actions/saisies.ts). */}
-          <input type="hidden" name="heure_debut" value={debut} />
-          <input type="hidden" name="heure_fin" value={fin} />
-
+          {/* step=900 (15 min en secondes) : le picker natif (roue iOS,
+              horloge Android) ne propose plus que :00/:15/:30/:45 pour les
+              minutes — même règle pour tous les comptes, cette page est
+              partagée technicien/admin. Sur PC le pas agit surtout sur les
+              flèches du spinner natif, moins visible qu'un menu déroulant,
+              mais c'est le rendu préféré (un seul champ compact, comme
+              avant) plutôt que deux select heure/minutes séparés. */}
           <div style={{ display: "flex", gap: "0.5rem" }}>
-            <div style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
+            <label style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
               <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{t.modeHeures.debut}</span>
-              <div style={{ display: "flex", gap: "0.35rem" }}>
-                <select
-                  aria-label={`${t.modeHeures.debut} — heure`}
-                  value={heurePart(debut)}
-                  onChange={(e) => setDebut(`${e.target.value}:${minutePart(debut) || "00"}`)}
-                  style={styleChamp}
-                >
-                  <option value="" disabled>
-                    --
-                  </option>
-                  {HEURES.map((h) => (
-                    <option key={h} value={h}>
-                      {h}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  aria-label={`${t.modeHeures.debut} — minutes`}
-                  value={minutePart(debut)}
-                  onChange={(e) => setDebut(`${heurePart(debut) || "00"}:${e.target.value}`)}
-                  style={styleChamp}
-                >
-                  <option value="" disabled>
-                    --
-                  </option>
-                  {MINUTES.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
+              <input
+                name="heure_debut"
+                type="time"
+                step={900}
+                required
+                value={debut}
+                onChange={(e) => setDebut(e.target.value)}
+                style={styleChamp}
+              />
+            </label>
+            <label style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
               <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{t.modeHeures.fin}</span>
-              <div style={{ display: "flex", gap: "0.35rem" }}>
-                <select
-                  aria-label={`${t.modeHeures.fin} — heure`}
-                  value={heurePart(fin)}
-                  onChange={(e) => setFin(`${e.target.value}:${minutePart(fin) || "00"}`)}
-                  style={styleChamp}
-                >
-                  <option value="" disabled>
-                    --
-                  </option>
-                  {HEURES.map((h) => (
-                    <option key={h} value={h}>
-                      {h}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  aria-label={`${t.modeHeures.fin} — minutes`}
-                  value={minutePart(fin)}
-                  onChange={(e) => setFin(`${heurePart(fin) || "00"}:${e.target.value}`)}
-                  style={styleChamp}
-                >
-                  <option value="" disabled>
-                    --
-                  </option>
-                  {MINUTES.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+              <input
+                name="heure_fin"
+                type="time"
+                step={900}
+                required
+                value={fin}
+                onChange={(e) => setFin(e.target.value)}
+                style={styleChamp}
+              />
+            </label>
           </div>
           <label style={{ display: "grid", gap: "0.25rem" }}>
             <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{t.modeHeures.pause}</span>
