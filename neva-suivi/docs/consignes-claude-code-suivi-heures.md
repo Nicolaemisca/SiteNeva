@@ -2,9 +2,10 @@
 
 Document préparé le 18 septembre 2026.
 
-Avancement : consigne 1 résolue (la piste Tailwind était fausse, corrigé comme
-effet de bord du nettoyage Vercel). Consigne 3 implémentée sur la branche
-consigne-3-gestion-utilisateurs.
+Avancement : consignes 1 à 18 toutes fusionnées sur main. Plus, hors liste :
+flux « mot de passe oublié » via email de récupération (branche
+mot-de-passe-oublie, fusionnée). Reste : la section « Points restés en
+suspens » ci-dessous, jamais reprise depuis sa rédaction.
 
 Mode d'emploi : une consigne à la fois, chacune sur sa propre branche Git.
 Phrase d'ouverture type : « Crée une branche pour ce qui suit, implémente-le,
