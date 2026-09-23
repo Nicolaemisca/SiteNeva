@@ -169,6 +169,46 @@ export async function supprimerUtilisateur(formData: FormData) {
   redirect(versUrlUtilisateurs({ supprime: "1" }));
 }
 
+// Tarif horaire admin-only (cahier consigne 17) : table tarifs_horaires
+// dédiée (migration 0010), jamais une colonne sur users — voir le
+// commentaire de la migration. Champ vidé = tarif effacé plutôt qu'un 0
+// qui laisserait croire à un tarif "gratuit" volontaire.
+export async function definirTarifHoraire(formData: FormData) {
+  const { supabase } = await requireAdmin();
+
+  const id = String(formData.get("id") ?? "");
+  const tarifBrut = String(formData.get("tarif_horaire") ?? "").trim().replace(",", ".");
+
+  if (!id) {
+    redirect(versUrlUtilisateurs({ erreur: "Compte introuvable." }));
+  }
+
+  if (!tarifBrut) {
+    const { error } = await supabase.from("tarifs_horaires").delete().eq("user_id", id);
+    if (error) {
+      redirect(versUrlUtilisateurs({ erreur: `Échec : ${error.message}` }));
+    }
+    revalidatePath("/admin/utilisateurs");
+    redirect(versUrlUtilisateurs({ tarif_maj: "1" }));
+  }
+
+  const tarif = Number(tarifBrut);
+  if (Number.isNaN(tarif) || tarif < 0) {
+    redirect(versUrlUtilisateurs({ erreur: "Tarif horaire invalide." }));
+  }
+
+  const { error } = await supabase
+    .from("tarifs_horaires")
+    .upsert({ user_id: id, tarif_horaire: tarif, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+
+  if (error) {
+    redirect(versUrlUtilisateurs({ erreur: `Échec : ${error.message}` }));
+  }
+
+  revalidatePath("/admin/utilisateurs");
+  redirect(versUrlUtilisateurs({ tarif_maj: "1" }));
+}
+
 export async function reinitialiserMotDePasse(formData: FormData) {
   await requireAdmin();
   const admin = createAdminClient();
