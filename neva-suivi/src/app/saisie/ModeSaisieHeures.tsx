@@ -125,12 +125,17 @@ export function ModeSaisieHeures({
         </div>
       ) : (
         <div style={{ display: "grid", gap: "0.5rem" }}>
+          {/* step=900 (15 min en secondes) : le picker natif (roue iOS,
+              horloge Android) ne propose plus que :00/:15/:30/:45 pour les
+              minutes, au lieu de la minute près — même règle pour tous les
+              comptes, cette page est partagée technicien/admin. */}
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <label style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
               <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{t.modeHeures.debut}</span>
               <input
                 name="heure_debut"
                 type="time"
+                step={900}
                 required
                 value={debut}
                 onChange={(e) => setDebut(e.target.value)}
@@ -142,6 +147,7 @@ export function ModeSaisieHeures({
               <input
                 name="heure_fin"
                 type="time"
+                step={900}
                 required
                 value={fin}
                 onChange={(e) => setFin(e.target.value)}
