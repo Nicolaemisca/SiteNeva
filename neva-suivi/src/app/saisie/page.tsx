@@ -7,7 +7,7 @@ import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { Logo } from "@/components/Logo";
 import { dateDuJourBelge } from "@/lib/date";
 import { calculerSuggestion } from "@/lib/suggestionSaisie";
-import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire, styleChamp } from "@/lib/ui";
+import { couleurs, ombre, rayon, styleBoutonPrimaire, styleBoutonSecondaire, styleCarte, styleChamp } from "@/lib/ui";
 import { dictionnaires, estLangueValide } from "@/lib/i18n/dictionnaires";
 import { ModeSaisieHeures } from "./ModeSaisieHeures";
 import { SelectChantier } from "./SelectChantier";
@@ -88,7 +88,7 @@ export default async function SaisiePage({
         paddingBottom: "3rem",
         paddingLeft: "1.5rem",
         paddingRight: "1rem",
-        fontFamily: "sans-serif",
+        fontFamily: "var(--font-sans), sans-serif",
         color: couleurs.texte,
         background: couleurs.fondPage,
       }}
@@ -101,8 +101,15 @@ export default async function SaisiePage({
           alignItems: "center",
           gap: "0.75rem",
           marginBottom: "1.5rem",
-          paddingBottom: "1rem",
-          borderBottom: `1.5px solid ${couleurs.bordure}`,
+          marginLeft: "-1.5rem",
+          marginRight: "-1rem",
+          padding: "0.85rem 1rem 0.85rem 1.5rem",
+          background: couleurs.fond,
+          borderRadius: `0 0 ${rayon.moyen}px ${rayon.moyen}px`,
+          boxShadow: ombre.legere,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
@@ -282,7 +289,7 @@ export default async function SaisiePage({
         </div>
       )}
 
-      <form action={creerSaisie} style={{ display: "grid", gap: "1.25rem" }}>
+      <form action={creerSaisie} style={{ ...styleCarte, display: "grid", gap: "1.25rem", padding: "1.5rem" }}>
         <label style={{ display: "grid", gap: "0.35rem" }}>
           <span style={styleEtiquette}>{t.champs.date}</span>
           <input name="date" type="date" defaultValue={date} required style={styleChamp} />

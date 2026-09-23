@@ -5,7 +5,7 @@ import { enregistrerArrivee, supprimerPointage } from "@/app/actions/pointage";
 import { Logo } from "@/components/Logo";
 import { SelectChantier } from "@/app/saisie/SelectChantier";
 import { dateDuJourBelge } from "@/lib/date";
-import { couleurs, styleBoutonPrimaire, styleBoutonSecondaire } from "@/lib/ui";
+import { couleurs, ombre, rayon, styleBoutonPrimaire, styleBoutonSecondaire, styleCarte } from "@/lib/ui";
 import { BoutonArrivee } from "./BoutonArrivee";
 
 const styleEtiquette = { fontWeight: 600, color: couleurs.texte } as const;
@@ -54,7 +54,7 @@ export default async function PointagePage({
         paddingBottom: "3rem",
         paddingLeft: "1.5rem",
         paddingRight: "1rem",
-        fontFamily: "sans-serif",
+        fontFamily: "var(--font-sans), sans-serif",
         color: couleurs.texte,
         background: couleurs.fondPage,
       }}
@@ -67,8 +67,15 @@ export default async function PointagePage({
           alignItems: "center",
           gap: "0.75rem",
           marginBottom: "1.5rem",
-          paddingBottom: "1rem",
-          borderBottom: `1.5px solid ${couleurs.bordure}`,
+          marginLeft: "-1.5rem",
+          marginRight: "-1rem",
+          padding: "0.85rem 1rem 0.85rem 1.5rem",
+          background: couleurs.fond,
+          borderRadius: `0 0 ${rayon.moyen}px ${rayon.moyen}px`,
+          boxShadow: ombre.legere,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
@@ -166,7 +173,7 @@ export default async function PointagePage({
         </p>
       )}
 
-      <form action={enregistrerArrivee} style={{ display: "grid", gap: "1rem", marginBottom: "2rem" }}>
+      <form action={enregistrerArrivee} style={{ ...styleCarte, display: "grid", gap: "1rem", padding: "1.25rem", marginBottom: "2rem" }}>
         <label style={{ display: "grid", gap: "0.35rem" }}>
           <span style={styleEtiquette}>Chantier</span>
           <SelectChantier chantiers={chantiers ?? []} chantierIdInitial="" langue="fr" />
@@ -190,8 +197,9 @@ export default async function PointagePage({
                 alignItems: "center",
                 gap: "0.5rem",
                 background: couleurs.fond,
-                border: `1.5px solid ${couleurs.bordure}`,
-                borderRadius: 8,
+                border: `1px solid ${couleurs.bordureDouce}`,
+                borderRadius: rayon.petit,
+                boxShadow: ombre.legere,
                 padding: "0.65rem 0.85rem",
               }}
             >

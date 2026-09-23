@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { definirNouveauMotDePasse } from "@/app/actions/motDePasse";
 import { Logo } from "@/components/Logo";
-import { couleurs, styleBoutonPrimaire, styleChamp } from "@/lib/ui";
+import { couleurs, ombre, rayon, styleBoutonPrimaire, styleCarte, styleChamp } from "@/lib/ui";
 
 // Atteint uniquement via le lien "mot de passe oublié" (email ->
 // /auth/recuperation -> ici), jamais depuis un menu : la session vient d'un
@@ -29,46 +29,76 @@ export default async function ReinitialiserMotDePassePage({
   return (
     <main
       style={{
-        maxWidth: 380,
-        margin: "3rem auto",
-        paddingLeft: "1.5rem",
-        paddingRight: "1rem",
-        fontFamily: "sans-serif",
+        minHeight: "100dvh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "2rem 1.25rem",
+        background: `radial-gradient(circle at 50% -10%, #dfe7f1 0%, ${couleurs.fondPage} 55%)`,
+        fontFamily: "var(--font-sans), sans-serif",
         color: couleurs.texte,
       }}
     >
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
-        <Logo hauteur={56} />
-      </div>
-      <h1 style={{ fontSize: "1.1rem", textAlign: "center", fontWeight: 600 }}>Choisis un nouveau mot de passe</h1>
-
-      {erreur && (
-        <p
+      <div
+        style={{
+          ...styleCarte,
+          width: "100%",
+          maxWidth: 400,
+          padding: "2.25rem 2rem 2rem",
+          borderRadius: rayon.grand,
+          boxShadow: ombre.moyenne,
+          overflow: "hidden",
+          position: "relative",
+        }}
+      >
+        <div
+          aria-hidden
           style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 5,
+            background: `linear-gradient(90deg, ${couleurs.primaire}, ${couleurs.accentVert})`,
           }}
-        >
-          {erreur}
-        </p>
-      )}
+        />
 
-      <form action={definirNouveauMotDePasse} style={{ display: "grid", gap: "0.75rem", marginTop: "1.5rem" }}>
-        <label style={{ display: "grid", gap: "0.25rem" }}>
-          <span>Nouveau mot de passe</span>
-          <input name="mot_de_passe" type="password" autoComplete="new-password" required minLength={8} style={styleChamp} />
-        </label>
-        <label style={{ display: "grid", gap: "0.25rem" }}>
-          <span>Confirmer le mot de passe</span>
-          <input name="confirmation" type="password" autoComplete="new-password" required minLength={8} style={styleChamp} />
-        </label>
-        <button type="submit" style={{ ...styleBoutonPrimaire, marginTop: "0.25rem" }}>
-          Valider
-        </button>
-      </form>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.25rem" }}>
+          <Logo hauteur={52} />
+        </div>
+        <h1 style={{ fontSize: "1.05rem", textAlign: "center", fontWeight: 600, margin: "0 0 1.5rem" }}>
+          Choisis un nouveau mot de passe
+        </h1>
+
+        {erreur && (
+          <p
+            style={{
+              color: couleurs.erreur,
+              background: couleurs.erreurFond,
+              border: `1.5px solid ${couleurs.erreur}`,
+              borderRadius: rayon.petit,
+              padding: "0.75rem",
+              marginBottom: "1rem",
+            }}
+          >
+            {erreur}
+          </p>
+        )}
+
+        <form action={definirNouveauMotDePasse} style={{ display: "grid", gap: "0.75rem" }}>
+          <label style={{ display: "grid", gap: "0.25rem" }}>
+            <span>Nouveau mot de passe</span>
+            <input name="mot_de_passe" type="password" autoComplete="new-password" required minLength={8} style={styleChamp} />
+          </label>
+          <label style={{ display: "grid", gap: "0.25rem" }}>
+            <span>Confirmer le mot de passe</span>
+            <input name="confirmation" type="password" autoComplete="new-password" required minLength={8} style={styleChamp} />
+          </label>
+          <button type="submit" style={{ ...styleBoutonPrimaire, marginTop: "0.25rem" }}>
+            Valider
+          </button>
+        </form>
+      </div>
     </main>
   );
 }

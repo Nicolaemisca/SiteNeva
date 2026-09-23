@@ -9,6 +9,20 @@
 
 body {
   margin: 0;
+  /* --font-sans posée par next/font sur <html> (layout.tsx) ; le fallback
+     système couvre le court instant avant hydratation et tout élément qui
+     n'hériterait pas de la variable. */
+  font-family: var(--font-sans), -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Couleur de sélection de texte alignée sur la marque plutôt que le bleu
+   par défaut du navigateur — ne s'applique qu'aux champs (le reste du body
+   désactive la sélection, layout.tsx). */
+::selection {
+  background: #cfe0f5;
+  color: #14161a;
 }
 
 button,
@@ -21,7 +35,24 @@ textarea {
     border-color 0.15s ease,
     color 0.15s ease,
     opacity 0.15s ease,
+    box-shadow 0.15s ease,
     transform 0.1s ease;
+}
+
+/* Micro-interaction générique (bouton, lien tactile) : léger soulèvement +
+   ombre plus marquée au survol/focus clavier. Ciblée sur les boutons ayant
+   déjà une ombre inline (styleBoutonPrimaire/Secondaire, src/lib/ui.ts) pour
+   ne pas faire flotter les liens de texte nu — box-shadow != "none" les
+   distingue sans avoir besoin d'une className dédiée sur chaque appel. */
+button:not(:disabled):hover,
+a:hover {
+  filter: brightness(1.04);
+}
+
+button[style*="box-shadow"]:not(:disabled):hover,
+a[style*="box-shadow"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px -6px rgba(12, 37, 81, 0.32) !important;
 }
 
 button:not(:disabled):active,
@@ -31,6 +62,7 @@ a:active {
 
 button:disabled {
   cursor: not-allowed;
+  filter: none;
 }
 
 /* #0c2551 = couleurs.primaire (src/lib/ui.ts) — dupliqué ici car le CSS ne
@@ -42,6 +74,7 @@ button:focus-visible,
 a:focus-visible {
   outline: 2px solid #0c2551;
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
 @keyframes apparition-douce {

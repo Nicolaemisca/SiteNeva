@@ -18,9 +18,15 @@ export const couleurs = {
   // moins agressif à l'œil en plein soleil sur chantier.
   fondPage: "#eef0f2",
   primaire: "#0c2551",
+  // Pôle sombre du dégradé de marque (boutons, en-têtes) — jamais utilisée
+  // seule comme couleur de texte, uniquement en dégradé avec `primaire`.
+  primaireProfond: "#081a3a",
   primaireTexte: "#ffffff",
   accentVert: "#019f76",
   bordure: "#8f96a1",
+  // Séparateur discret (cartes, entêtes de section) : plus doux que
+  // `bordure`, qui reste réservée aux contours de champs/actions.
+  bordureDouce: "#e1e4e8",
   erreur: "#b3001b",
   erreurFond: "#fdecee",
   succes: "#0a7a3d",
@@ -34,11 +40,36 @@ export const couleurs = {
 // des gants ou des doigts mouillés sur chantier.
 export const TAILLE_TACTILE_MIN = 48;
 
+export const rayon = {
+  petit: 8,
+  moyen: 14,
+  grand: 20,
+} as const;
+
+// Ombres teintées navy (pas un gris neutre générique) à faible opacité :
+// lisibles en plein soleil sans jamais paraître sales ou salissantes sur
+// fond clair.
+export const ombre = {
+  legere: "0 1px 2px rgba(12, 37, 81, 0.08)",
+  moyenne: "0 8px 20px -6px rgba(12, 37, 81, 0.18)",
+  boutonPrimaire: "0 6px 16px -4px rgba(12, 37, 81, 0.35)",
+} as const;
+
+// Carte générique (sections du tableau de bord, blocs de formulaire) :
+// centralisée ici pour que tout le monde ait la même élévation plutôt que
+// des bordures plates ad hoc page par page.
+export const styleCarte: CSSProperties = {
+  background: couleurs.fond,
+  border: `1px solid ${couleurs.bordureDouce}`,
+  borderRadius: rayon.moyen,
+  boxShadow: ombre.moyenne,
+};
+
 export const styleChamp: CSSProperties = {
   fontSize: "1.1rem",
   padding: "0.85rem",
   minHeight: TAILLE_TACTILE_MIN,
-  borderRadius: 8,
+  borderRadius: rayon.petit,
   border: `1.5px solid ${couleurs.bordure}`,
   color: couleurs.texte,
   background: couleurs.fond,
@@ -49,15 +80,31 @@ export const styleChamp: CSSProperties = {
   userSelect: "text",
 };
 
+// Dégradé de marque plutôt qu'un aplat : donne du relief au bouton
+// d'action principal sans introduire de nouvelle couleur (les deux pôles
+// restent le navy de la marque). L'ombre teintée renforce la même
+// impression de profondeur — cohérente avec `ombre.boutonPrimaire`.
 export const styleBoutonPrimaire: CSSProperties = {
   fontSize: "1.15rem",
   fontWeight: 700,
   padding: "1rem",
   minHeight: 52,
-  borderRadius: 8,
+  borderRadius: rayon.petit,
   border: "none",
-  background: couleurs.primaire,
+  background: `linear-gradient(155deg, ${couleurs.primaire}, ${couleurs.primaireProfond})`,
   color: couleurs.primaireTexte,
+  boxShadow: ombre.boutonPrimaire,
+};
+
+export const styleBoutonSecondaire: CSSProperties = {
+  fontSize: "1rem",
+  fontWeight: 600,
+  padding: "0.75rem 1.1rem",
+  minHeight: TAILLE_TACTILE_MIN,
+  borderRadius: rayon.petit,
+  border: `1.5px solid ${couleurs.primaire}`,
+  background: couleurs.fond,
+  color: couleurs.primaire,
 };
 
 // Palette catégorielle (identité par utilisateur, ex. calendrier de
@@ -74,14 +121,3 @@ export const PALETTE_CATEGORIELLE = [
   "#4a3aa7", // violet
   "#e34948", // rouge
 ] as const;
-
-export const styleBoutonSecondaire: CSSProperties = {
-  fontSize: "1rem",
-  fontWeight: 600,
-  padding: "0.75rem 1.1rem",
-  minHeight: TAILLE_TACTILE_MIN,
-  borderRadius: 8,
-  border: `1.5px solid ${couleurs.primaire}`,
-  background: couleurs.fond,
-  color: couleurs.primaire,
-};
