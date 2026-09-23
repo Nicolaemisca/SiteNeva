@@ -24,6 +24,94 @@ function arrondirQuartHeure(hhmm: string): string {
   return `${String(hArrondi).padStart(2, "0")}:${String(mArrondi).padStart(2, "0")}`;
 }
 
+// step="900" sur <input type="time"> ne restreint pas fiablement la liste de
+// minutes affichée par le picker natif desktop (confirmé en test : Chrome
+// laisse toujours défiler 00 à 59) — seuls certains pickers mobiles
+// respectent le pas. Pour vraiment n'offrir que :00/:15/:30/:45, deux
+// <select> (heure, quart d'heure) réunis dans un seul cadre visuel donnent
+// l'apparence d'un champ unique tout en garantissant la restriction, quel
+// que soit le navigateur.
+const HEURES = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+const QUARTS_HEURE = ["00", "15", "30", "45"];
+
+function heurePart(hhmm: string): string {
+  return hhmm.split(":")[0] ?? "";
+}
+
+function minutePart(hhmm: string): string {
+  return hhmm.split(":")[1] ?? "";
+}
+
+const styleSegmentHeure: CSSProperties = {
+  border: "none",
+  background: "transparent",
+  fontSize: "1.1rem",
+  color: couleurs.texte,
+  padding: "0.85rem 0.15rem",
+  WebkitUserSelect: "text",
+  userSelect: "text",
+};
+
+// Un seul cadre (styleChamp) autour de deux <select> natifs séparés par
+// ":" : au clavier/tap, chacun ouvre sa propre liste — celle des minutes ne
+// contient que les quatre valeurs autorisées, ce qu'un <input type="time">
+// ne peut pas garantir (voir commentaire plus haut).
+function ChampHeureQuartHeure({
+  label,
+  name,
+  value,
+  onChange,
+}: {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (valeur: string) => void;
+}) {
+  return (
+    <label style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
+      <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{label}</span>
+      <div style={{ ...styleChamp, display: "flex", alignItems: "center", padding: "0 0.4rem" }}>
+        <select
+          aria-label={`${label} — heure`}
+          required
+          value={heurePart(value)}
+          onChange={(e) => onChange(`${e.target.value}:${minutePart(value) || "00"}`)}
+          style={{ ...styleSegmentHeure, flex: 1 }}
+        >
+          <option value="" disabled>
+            --
+          </option>
+          {HEURES.map((h) => (
+            <option key={h} value={h}>
+              {h}
+            </option>
+          ))}
+        </select>
+        <span aria-hidden style={{ color: couleurs.texteAttenue }}>
+          :
+        </span>
+        <select
+          aria-label={`${label} — minutes`}
+          required
+          value={minutePart(value)}
+          onChange={(e) => onChange(`${heurePart(value) || "00"}:${e.target.value}`)}
+          style={{ ...styleSegmentHeure, flex: 1 }}
+        >
+          <option value="" disabled>
+            --
+          </option>
+          {QUARTS_HEURE.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
+      </div>
+      <input type="hidden" name={name} value={value} />
+    </label>
+  );
+}
+
 const styleBoutonMode = (actif: boolean): CSSProperties => ({
   flex: 1,
   minHeight: 40,
@@ -140,38 +228,9 @@ export function ModeSaisieHeures({
         </div>
       ) : (
         <div style={{ display: "grid", gap: "0.5rem" }}>
-          {/* Champ natif inchangé visuellement (step=900 pour le picker
-              mobile — roue iOS/horloge Android), mais le navigateur
-              n'empêche pas forcément la saisie libre au clavier/spinner sur
-              PC : l'arrondi au quart d'heure se fait donc aussi à
-              l'onChange, pour garantir :00/:15/:30/:45 quel que soit le
-              navigateur — même règle pour tous les comptes, cette page est
-              partagée technicien/admin. */}
           <div style={{ display: "flex", gap: "0.5rem" }}>
-            <label style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
-              <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{t.modeHeures.debut}</span>
-              <input
-                name="heure_debut"
-                type="time"
-                step={900}
-                required
-                value={debut}
-                onChange={(e) => setDebut(arrondirQuartHeure(e.target.value))}
-                style={styleChamp}
-              />
-            </label>
-            <label style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
-              <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{t.modeHeures.fin}</span>
-              <input
-                name="heure_fin"
-                type="time"
-                step={900}
-                required
-                value={fin}
-                onChange={(e) => setFin(arrondirQuartHeure(e.target.value))}
-                style={styleChamp}
-              />
-            </label>
+            <ChampHeureQuartHeure label={t.modeHeures.debut} name="heure_debut" value={debut} onChange={setDebut} />
+            <ChampHeureQuartHeure label={t.modeHeures.fin} name="heure_fin" value={fin} onChange={setFin} />
           </div>
           <label style={{ display: "grid", gap: "0.25rem" }}>
             <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{t.modeHeures.pause}</span>
