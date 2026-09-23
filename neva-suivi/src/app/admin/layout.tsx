@@ -35,6 +35,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <Link href="/admin/utilisateurs" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
             Utilisateurs
           </Link>
+          <Link href="/pointage" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
+            Pointage
+          </Link>
           <Link href="/saisie" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
             Ma saisie
           </Link>
