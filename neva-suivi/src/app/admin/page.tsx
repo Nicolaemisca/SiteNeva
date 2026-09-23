@@ -85,6 +85,38 @@ export default async function DashboardAdminPage({
   const { annee: anneeSuiv, moisIndex0: moisSuiv } =
     moisIndex0 === 11 ? { annee: annee + 1, moisIndex0: 0 } : { annee, moisIndex0: moisIndex0 + 1 };
 
+  // Heures par chantier (cahier consigne 18) : cumul TOUT l'historique, pas
+  // seulement le mois affiché plus haut — "voir où va le temps" n'a pas de
+  // fenêtre glissante, contrairement au calendrier de présence qui lui est
+  // mensuel par nature.
+  const { data: chantiersActifs, error: erreurChantiers } = await supabase
+    .from("chantiers")
+    .select("id, nom")
+    .eq("statut", "actif")
+    .order("nom");
+
+  const idsChantiersActifs = (chantiersActifs ?? []).map((c) => c.id);
+  const { data: saisiesChantiers } = idsChantiersActifs.length
+    ? await supabase.from("saisies").select("chantier_id, user_id, heures").in("chantier_id", idsChantiersActifs)
+    : { data: [] as { chantier_id: string; user_id: string; heures: number }[] };
+
+  type RepartitionChantier = { total: number; parUtilisateur: Map<string, number> };
+  const heuresParChantier = new Map<string, RepartitionChantier>();
+  for (const s of saisiesChantiers ?? []) {
+    const entree = heuresParChantier.get(s.chantier_id) ?? { total: 0, parUtilisateur: new Map<string, number>() };
+    entree.total += Number(s.heures);
+    entree.parUtilisateur.set(s.user_id, (entree.parUtilisateur.get(s.user_id) ?? 0) + Number(s.heures));
+    heuresParChantier.set(s.chantier_id, entree);
+  }
+
+  const nomParUtilisateur = new Map((utilisateurs ?? []).map((u) => [u.id, u.nom]));
+
+  // Chantier le plus chronophage en premier : plus utile ici que l'ordre
+  // alphabétique (déjà utilisé partout ailleurs, ex. sélecteurs de saisie).
+  const chantiersTries = [...(chantiersActifs ?? [])].sort(
+    (a, b) => (heuresParChantier.get(b.id)?.total ?? 0) - (heuresParChantier.get(a.id)?.total ?? 0)
+  );
+
   return (
     <main>
       <h1 style={{ fontSize: "1.1rem", margin: "0 0 1rem" }}>Tableau de bord</h1>
@@ -209,6 +241,75 @@ export default async function DashboardAdminPage({
           Encadré ⚠ : moins de saisies que d&rsquo;utilisateurs actifs ({nombreActifs}) ce jour-là. Clique un jour pour
           voir le détail.
         </p>
+      </section>
+
+      <section
+        style={{
+          background: couleurs.fond,
+          border: `1.5px solid ${couleurs.bordure}`,
+          borderRadius: 8,
+          padding: "1rem",
+          maxWidth: 640,
+          marginTop: "1.5rem",
+        }}
+      >
+        <h2 style={{ fontSize: "0.95rem", margin: "0 0 0.75rem" }}>Heures par chantier</h2>
+
+        {erreurChantiers && (
+          <p style={{ color: couleurs.erreur, background: couleurs.erreurFond, border: `1.5px solid ${couleurs.erreur}`, borderRadius: 8, padding: "0.75rem" }}>
+            {erreurChantiers.message}
+          </p>
+        )}
+
+        {chantiersTries.length === 0 && <p style={{ color: couleurs.texteAttenue }}>Aucun chantier actif.</p>}
+
+        <div style={{ display: "grid", gap: "1rem" }}>
+          {chantiersTries.map((c) => {
+            const repartition = heuresParChantier.get(c.id);
+            const total = repartition?.total ?? 0;
+            const parUtilisateur = [...(repartition?.parUtilisateur ?? new Map())]
+              .map(([userId, heures]) => ({ userId, nom: nomParUtilisateur.get(userId) ?? "?", heures }))
+              .sort((a, b) => b.heures - a.heures);
+
+            return (
+              <div key={c.id}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.35rem" }}>
+                  <Link href={`/admin/saisies?chantier_id=${c.id}`} style={{ color: couleurs.texte, fontWeight: 600, textDecoration: "none" }}>
+                    {c.nom}
+                  </Link>
+                  <strong>{total.toFixed(2)} h</strong>
+                </div>
+
+                {total > 0 ? (
+                  <>
+                    <div style={{ display: "flex", height: 10, borderRadius: 5, overflow: "hidden", background: couleurs.fondPage }}>
+                      {parUtilisateur.map((p) => (
+                        <div
+                          key={p.userId}
+                          title={`${p.nom} : ${p.heures.toFixed(2)} h`}
+                          style={{
+                            width: `${(p.heures / total) * 100}%`,
+                            background: couleurParUtilisateur.get(p.userId) ?? couleurs.bordure,
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem 0.85rem", marginTop: "0.4rem" }}>
+                      {parUtilisateur.map((p) => (
+                        <span key={p.userId} style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", fontSize: "0.78rem", color: couleurs.texteAttenue }}>
+                          <span aria-hidden style={{ width: 8, height: 8, borderRadius: "50%", background: couleurParUtilisateur.get(p.userId) ?? couleurs.bordure, flexShrink: 0 }} />
+                          {p.nom} — {p.heures.toFixed(2)} h
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p style={{ margin: 0, fontSize: "0.8rem", color: couleurs.texteAttenue }}>Aucune heure enregistrée.</p>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </section>
     </main>
   );
