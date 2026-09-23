@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { signOut } from "@/app/actions/auth";
 import { enregistrerArrivee, supprimerPointage } from "@/app/actions/pointage";
+import { Alerte } from "@/components/Alerte";
 import { Logo } from "@/components/Logo";
 import { SelectChantier } from "@/app/saisie/SelectChantier";
 import { dateDuJourBelge } from "@/lib/date";
@@ -110,67 +111,29 @@ export default async function PointagePage({
       </header>
 
       {params.enregistre && (
-        <p
-          role="status"
-          style={{
-            color: couleurs.succes,
-            background: couleurs.succesFond,
-            border: `1.5px solid ${couleurs.succes}`,
-            borderRadius: 8,
-            padding: "0.85rem",
-            marginBottom: "1.25rem",
-            fontWeight: 700,
-          }}
-        >
-          Arrivée pointée.
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="succes">Arrivée pointée.</Alerte>
+        </div>
       )}
       {params.supprime && (
         <p style={{ color: couleurs.texteAttenue, marginBottom: "1.25rem" }}>Pointage supprimé.</p>
       )}
       {params.journee_cloturee && (
-        <p
-          role="status"
-          style={{
-            color: couleurs.succes,
-            background: couleurs.succesFond,
-            border: `1.5px solid ${couleurs.succes}`,
-            borderRadius: 8,
-            padding: "0.85rem",
-            marginBottom: "1.25rem",
-            fontWeight: 700,
-          }}
-        >
-          Journée clôturée : les heures ont été ajoutées à tes saisies du jour.
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="succes">Journée clôturée : les heures ont été ajoutées à tes saisies du jour.</Alerte>
+        </div>
       )}
       {params.erreur && (
-        <p
-          style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-            marginBottom: "1.25rem",
-          }}
-        >
-          {params.erreur}
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="erreur">{params.erreur}</Alerte>
+        </div>
       )}
       {(erreurChantiers || erreurPointages) && (
-        <p
-          style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-            marginBottom: "1.25rem",
-          }}
-        >
-          Erreur de chargement : {(erreurChantiers ?? erreurPointages)?.message}
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="erreur">
+            Erreur de chargement : {(erreurChantiers ?? erreurPointages)?.message}
+          </Alerte>
+        </div>
       )}
 
       <form action={enregistrerArrivee} style={{ ...styleCarte, display: "grid", gap: "1rem", padding: "1.25rem", marginBottom: "2rem" }}>

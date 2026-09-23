@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { creerSaisie } from "@/app/actions/saisies";
 import { signOut } from "@/app/actions/auth";
+import { Alerte } from "@/components/Alerte";
 import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { Logo } from "@/components/Logo";
 import { dateDuJourBelge } from "@/lib/date";
@@ -167,68 +168,21 @@ export default async function SaisiePage({
       </header>
 
       {params.envoye && (
-        <div
-          className="apparition-douce"
-          role="status"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.65rem",
-            color: couleurs.succes,
-            background: couleurs.succesFond,
-            border: `1.5px solid ${couleurs.succes}`,
-            borderRadius: 8,
-            padding: "1rem",
-            marginBottom: "0.5rem",
-            fontWeight: 700,
-            fontSize: "1.05rem",
-          }}
-        >
-          <span
-            aria-hidden
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 26,
-              height: 26,
-              borderRadius: "50%",
-              background: couleurs.succes,
-              color: "#fff",
-              fontSize: "1rem",
-              flexShrink: 0,
-            }}
-          >
-            ✓
-          </span>
-          {t.saisiePage.saisieEnregistree}
+        <div style={{ marginBottom: "0.5rem" }}>
+          <Alerte variante="succes">{t.saisiePage.saisieEnregistree}</Alerte>
         </div>
       )}
       {params.erreur && (
-        <p
-          style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-          }}
-        >
-          {params.erreur}
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="erreur">{params.erreur}</Alerte>
+        </div>
       )}
       {erreurChantiers && (
-        <p
-          style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-          }}
-        >
-          {t.saisiePage.erreurChargementChantiers} : {erreurChantiers.message}
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="erreur">
+            {t.saisiePage.erreurChargementChantiers} : {erreurChantiers.message}
+          </Alerte>
+        </div>
       )}
 
       {params.doublon && (

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { changerMotDePasseInitial } from "@/app/actions/motDePasse";
 import { signOut } from "@/app/actions/auth";
+import { Alerte } from "@/components/Alerte";
 import { Logo } from "@/components/Logo";
 import { couleurs, ombre, rayon, styleBoutonPrimaire, styleCarte, styleChamp } from "@/lib/ui";
 
@@ -73,18 +74,9 @@ export default async function ChangerMotDePassePage({
         </p>
 
         {erreur && (
-          <p
-            style={{
-              color: couleurs.erreur,
-              background: couleurs.erreurFond,
-              border: `1.5px solid ${couleurs.erreur}`,
-              borderRadius: rayon.petit,
-              padding: "0.75rem",
-              marginBottom: "1rem",
-            }}
-          >
-            {erreur}
-          </p>
+          <div style={{ marginBottom: "1rem" }}>
+            <Alerte variante="erreur">{erreur}</Alerte>
+          </div>
         )}
 
         <form action={changerMotDePasseInitial} style={{ display: "grid", gap: "0.75rem" }}>

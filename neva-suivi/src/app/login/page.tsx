@@ -1,4 +1,5 @@
 import { demanderReinitialisationMotDePasse, signInWithPassword } from "@/app/actions/auth";
+import { Alerte } from "@/components/Alerte";
 import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { Logo } from "@/components/Logo";
 import { couleurs, ombre, rayon, styleBoutonPrimaire, styleBoutonSecondaire, styleCarte, styleChamp } from "@/lib/ui";
@@ -85,30 +86,16 @@ export default async function LoginPage({
         </h1>
 
         {erreur && (
-          <p
-            style={{
-              color: couleurs.erreur,
-              background: couleurs.erreurFond,
-              border: `1.5px solid ${couleurs.erreur}`,
-              borderRadius: rayon.petit,
-              padding: "0.75rem",
-            }}
-          >
-            {erreur}
-          </p>
+          <div style={{ marginBottom: "1rem" }}>
+            <Alerte variante="erreur">{erreur}</Alerte>
+          </div>
         )}
         {reinitialisation_envoyee && (
-          <p
-            style={{
-              color: couleurs.succes,
-              background: couleurs.succesFond,
-              border: `1.5px solid ${couleurs.succes}`,
-              borderRadius: rayon.petit,
-              padding: "0.75rem",
-            }}
-          >
-            Si un compte existe avec cette adresse, un email a été envoyé pour choisir un nouveau mot de passe.
-          </p>
+          <div style={{ marginBottom: "1rem" }}>
+            <Alerte variante="succes">
+              Si un compte existe avec cette adresse, un email a été envoyé pour choisir un nouveau mot de passe.
+            </Alerte>
+          </div>
         )}
 
         <form action={signInWithPassword} style={{ display: "grid", gap: "0.75rem" }}>

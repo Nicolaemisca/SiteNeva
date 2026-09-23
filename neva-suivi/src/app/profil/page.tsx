@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { modifierLangue } from "@/app/actions/profil";
+import { Alerte } from "@/components/Alerte";
 import { Logo } from "@/components/Logo";
 import { couleurs, ombre, rayon, styleBoutonPrimaire, styleBoutonSecondaire, styleCarte, styleChamp } from "@/lib/ui";
 import { dictionnaires, estLangueValide, LANGUES } from "@/lib/i18n/dictionnaires";
@@ -74,34 +75,15 @@ export default async function ProfilPage({
       </header>
 
       {enregistre && (
-        <p
-          style={{
-            color: couleurs.succes,
-            background: couleurs.succesFond,
-            border: `1.5px solid ${couleurs.succes}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-            fontWeight: 600,
-            marginBottom: "1.25rem",
-          }}
-        >
-          {t.profilPage.langueEnregistree}
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="succes">{t.profilPage.langueEnregistree}</Alerte>
+        </div>
       )}
 
       {erreur && (
-        <p
-          style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-            marginBottom: "1.25rem",
-          }}
-        >
-          {erreur}
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="erreur">{erreur}</Alerte>
+        </div>
       )}
 
       <div style={{ ...styleCarte, padding: "1.5rem" }}>

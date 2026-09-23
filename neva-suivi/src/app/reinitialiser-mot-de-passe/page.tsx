@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { definirNouveauMotDePasse } from "@/app/actions/motDePasse";
+import { Alerte } from "@/components/Alerte";
 import { Logo } from "@/components/Logo";
 import { couleurs, ombre, rayon, styleBoutonPrimaire, styleCarte, styleChamp } from "@/lib/ui";
 
@@ -71,18 +72,9 @@ export default async function ReinitialiserMotDePassePage({
         </h1>
 
         {erreur && (
-          <p
-            style={{
-              color: couleurs.erreur,
-              background: couleurs.erreurFond,
-              border: `1.5px solid ${couleurs.erreur}`,
-              borderRadius: rayon.petit,
-              padding: "0.75rem",
-              marginBottom: "1rem",
-            }}
-          >
-            {erreur}
-          </p>
+          <div style={{ marginBottom: "1rem" }}>
+            <Alerte variante="erreur">{erreur}</Alerte>
+          </div>
         )}
 
         <form action={definirNouveauMotDePasse} style={{ display: "grid", gap: "0.75rem" }}>

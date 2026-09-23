@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { cloturerPointage } from "@/app/actions/pointage";
+import { Alerte } from "@/components/Alerte";
 import { BoutonEnvoi } from "@/components/BoutonEnvoi";
 import { dateDuJourBelge } from "@/lib/date";
 import { calculerRecapPointage, type PointageBrut } from "@/lib/recapPointage";
@@ -65,18 +66,9 @@ export default async function RecapPointagePage({
       </p>
 
       {params.erreur && (
-        <p
-          style={{
-            color: couleurs.erreur,
-            background: couleurs.erreurFond,
-            border: `1.5px solid ${couleurs.erreur}`,
-            borderRadius: 8,
-            padding: "0.75rem",
-            marginBottom: "1.25rem",
-          }}
-        >
-          {params.erreur}
-        </p>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <Alerte variante="erreur">{params.erreur}</Alerte>
+        </div>
       )}
 
       {recap.length === 0 ? (
