@@ -42,12 +42,22 @@ function minutePart(hhmm: string): string {
   return hhmm.split(":")[1] ?? "";
 }
 
+// appearance: none retire la flèche native du <select> : sans elle, les
+// deux segments se lisent comme du texte ordinaire dans un seul champ
+// ("08 : 15") plutôt que comme "deux select" visuellement — la liste reste
+// accessible au clic/tap et au clavier, seule la décoration disparaît.
 const styleSegmentHeure: CSSProperties = {
   border: "none",
   background: "transparent",
+  appearance: "none",
+  WebkitAppearance: "none",
+  MozAppearance: "none",
   fontSize: "1.1rem",
+  fontWeight: 600,
   color: couleurs.texte,
-  padding: "0.85rem 0.15rem",
+  textAlign: "center",
+  padding: "0.85rem 0.1rem",
+  cursor: "pointer",
   WebkitUserSelect: "text",
   userSelect: "text",
 };
