@@ -9,6 +9,38 @@ import { dictionnaires, type Langue } from "@/lib/i18n/dictionnaires";
 // reste disponible pour affiner. Chiffres seuls : pas de texte à traduire.
 const PRESETS = [8, 9, 10, 11];
 
+// Deux select natifs (heure, minutes) plutôt qu'un <input type="time"> :
+// l'attribut step="900" du time natif ne se voit pas forcément (spinner
+// discret sur PC, comportement inégal selon navigateur/OS) — un vrai menu
+// déroulant est sans ambiguïté, sur téléphone comme sur PC (même logique
+// que le menu de pause juste en dessous). Minutes limitées au quart d'heure
+// pour tous les comptes, cette page étant partagée technicien/admin.
+const HEURES = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+const MINUTES = ["00", "15", "30", "45"];
+
+function heurePart(hhmm: string): string {
+  return hhmm.split(":")[0] ?? "";
+}
+
+function minutePart(hhmm: string): string {
+  return hhmm.split(":")[1] ?? "";
+}
+
+// Une valeur initiale (suggestion basée sur d'anciennes saisies, ou
+// republication après erreur) peut tomber hors grille — les saisies faites
+// avant ce changement n'étaient pas au quart d'heure près. On arrondit une
+// fois à l'initialisation plutôt que de laisser le select sans option
+// sélectionnée : une valeur approchée reste plus utile qu'un champ vide.
+function arrondirQuartHeure(hhmm: string): string {
+  if (!hhmm) return hhmm;
+  const [h, m] = hhmm.split(":").map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return hhmm;
+  const totalArrondi = Math.round((h * 60 + m) / 15) * 15;
+  const hArrondi = Math.floor(totalArrondi / 60) % 24;
+  const mArrondi = totalArrondi % 60;
+  return `${String(hArrondi).padStart(2, "0")}:${String(mArrondi).padStart(2, "0")}`;
+}
+
 const styleBoutonMode = (actif: boolean): CSSProperties => ({
   flex: 1,
   minHeight: 40,
@@ -64,8 +96,8 @@ export function ModeSaisieHeures({
 
   const [mode, setMode] = useState<"total" | "horaires">(modeInitial);
   const [valeur, setValeur] = useState(valeurInitiale || "8");
-  const [debut, setDebut] = useState(debutInitial);
-  const [fin, setFin] = useState(finInitial);
+  const [debut, setDebut] = useState(() => arrondirQuartHeure(debutInitial));
+  const [fin, setFin] = useState(() => arrondirQuartHeure(finInitial));
   const [pause, setPause] = useState(pauseInitiale || "0");
 
   const heuresCalculees = calculerHeures(debut, fin, Number(pause));
@@ -125,35 +157,84 @@ export function ModeSaisieHeures({
         </div>
       ) : (
         <div style={{ display: "grid", gap: "0.5rem" }}>
-          {/* step=900 (15 min en secondes) : le picker natif (roue iOS,
-              horloge Android) ne propose plus que :00/:15/:30/:45 pour les
-              minutes, au lieu de la minute près — même règle pour tous les
-              comptes, cette page est partagée technicien/admin. */}
+          {/* required n'a pas d'effet sur un champ hidden (hors validation de
+              contrainte du navigateur) : la présence/absence est de toute
+              façon revérifiée côté serveur (lireChampsHeures,
+              src/app/actions/saisies.ts). */}
+          <input type="hidden" name="heure_debut" value={debut} />
+          <input type="hidden" name="heure_fin" value={fin} />
+
           <div style={{ display: "flex", gap: "0.5rem" }}>
-            <label style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
+            <div style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
               <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{t.modeHeures.debut}</span>
-              <input
-                name="heure_debut"
-                type="time"
-                step={900}
-                required
-                value={debut}
-                onChange={(e) => setDebut(e.target.value)}
-                style={styleChamp}
-              />
-            </label>
-            <label style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
+              <div style={{ display: "flex", gap: "0.35rem" }}>
+                <select
+                  aria-label={`${t.modeHeures.debut} — heure`}
+                  value={heurePart(debut)}
+                  onChange={(e) => setDebut(`${e.target.value}:${minutePart(debut) || "00"}`)}
+                  style={styleChamp}
+                >
+                  <option value="" disabled>
+                    --
+                  </option>
+                  {HEURES.map((h) => (
+                    <option key={h} value={h}>
+                      {h}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  aria-label={`${t.modeHeures.debut} — minutes`}
+                  value={minutePart(debut)}
+                  onChange={(e) => setDebut(`${heurePart(debut) || "00"}:${e.target.value}`)}
+                  style={styleChamp}
+                >
+                  <option value="" disabled>
+                    --
+                  </option>
+                  {MINUTES.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div style={{ display: "grid", gap: "0.25rem", flex: 1 }}>
               <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{t.modeHeures.fin}</span>
-              <input
-                name="heure_fin"
-                type="time"
-                step={900}
-                required
-                value={fin}
-                onChange={(e) => setFin(e.target.value)}
-                style={styleChamp}
-              />
-            </label>
+              <div style={{ display: "flex", gap: "0.35rem" }}>
+                <select
+                  aria-label={`${t.modeHeures.fin} — heure`}
+                  value={heurePart(fin)}
+                  onChange={(e) => setFin(`${e.target.value}:${minutePart(fin) || "00"}`)}
+                  style={styleChamp}
+                >
+                  <option value="" disabled>
+                    --
+                  </option>
+                  {HEURES.map((h) => (
+                    <option key={h} value={h}>
+                      {h}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  aria-label={`${t.modeHeures.fin} — minutes`}
+                  value={minutePart(fin)}
+                  onChange={(e) => setFin(`${heurePart(fin) || "00"}:${e.target.value}`)}
+                  style={styleChamp}
+                >
+                  <option value="" disabled>
+                    --
+                  </option>
+                  {MINUTES.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
           <label style={{ display: "grid", gap: "0.25rem" }}>
             <span style={{ fontSize: "0.8rem", color: couleurs.texteAttenue }}>{t.modeHeures.pause}</span>
