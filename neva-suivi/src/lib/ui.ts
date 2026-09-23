@@ -60,6 +60,21 @@ export const styleBoutonPrimaire: CSSProperties = {
   color: couleurs.primaireTexte,
 };
 
+// Palette catégorielle (identité par utilisateur, ex. calendrier de
+// présence consigne 16) : ordre et valeurs issus de la palette de référence
+// validée (CVD Delta E >= 8, contraste AA sur fond clair) — ne pas réordonner
+// ni ajouter une couleur "à l'œil", l'ordre fait partie de la validation.
+export const PALETTE_CATEGORIELLE = [
+  "#2a78d6", // bleu
+  "#eb6834", // orange
+  "#1baf7a", // aqua
+  "#eda100", // jaune
+  "#e87ba4", // magenta
+  "#008300", // vert
+  "#4a3aa7", // violet
+  "#e34948", // rouge
+] as const;
+
 export const styleBoutonSecondaire: CSSProperties = {
   fontSize: "1rem",
   fontWeight: 600,

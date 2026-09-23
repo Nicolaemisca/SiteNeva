@@ -26,6 +26,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         }}
       >
         <nav style={{ display: "flex", gap: "0.5rem" }}>
+          <Link href="/admin" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
+            Tableau de bord
+          </Link>
           <Link href="/admin/chantiers" style={{ ...styleBoutonSecondaire, minHeight: 40, padding: "0.5rem 0.85rem", fontSize: "0.9rem" }}>
             Chantiers
           </Link>
