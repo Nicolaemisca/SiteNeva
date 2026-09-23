@@ -58,7 +58,7 @@ export default async function ChangerMotDePassePage({
             left: 0,
             right: 0,
             height: 5,
-            background: `linear-gradient(90deg, ${couleurs.primaire}, ${couleurs.accentVert})`,
+            background: `linear-gradient(90deg, ${couleurs.primaire}, ${couleurs.accent})`,
           }}
         />
 
