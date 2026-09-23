@@ -188,9 +188,9 @@ export default async function SaisiePage({
       {params.doublon && (
         <div
           style={{
-            border: `2px solid ${couleurs.texte}`,
+            border: `1.5px solid ${couleurs.avertissement}`,
             background: couleurs.avertissementFond,
-            borderRadius: rayon.petit,
+            borderRadius: 8,
             padding: "0.85rem",
             marginBottom: "1.5rem",
           }}
@@ -220,9 +220,9 @@ export default async function SaisiePage({
             display: "flex",
             alignItems: "flex-start",
             gap: "0.6rem",
-            border: `2px solid ${couleurs.texte}`,
-            background: couleurs.avertissementFond,
-            borderRadius: rayon.petit,
+            border: `1.5px solid ${couleurs.primaire}`,
+            background: "#eaf1f8",
+            borderRadius: 8,
             padding: "0.85rem",
             marginBottom: "1.25rem",
           }}

@@ -14,10 +14,7 @@ const TEINTES: Record<Variante, { texte: string; fond: string }> = {
   succes: { texte: couleurs.succes, fond: couleurs.succesFond },
   erreur: { texte: couleurs.erreur, fond: couleurs.erreurFond },
   avertissement: { texte: couleurs.avertissement, fond: couleurs.avertissementFond },
-  // Pas couleurs.primaire (ambre) comme texte : ~2:1 de contraste sur blanc,
-  // bien sous le seuil AA — le noir reste la seule couleur de texte fiable
-  // dans ce thème, l'ambre est réservée aux blocs pleins avec texte noir.
-  info: { texte: couleurs.texte, fond: couleurs.avertissementFond },
+  info: { texte: couleurs.primaire, fond: "#eaf1f8" },
 };
 
 // Bandeau de message unifié (succès/erreur/avertissement/info) : remplace
@@ -45,7 +42,7 @@ export function Alerte({
         gap: "0.65rem",
         color: c.texte,
         background: c.fond,
-        border: `2px solid ${c.texte}`,
+        border: `1.5px solid ${c.texte}`,
         borderRadius: rayon.petit,
         padding: "0.85rem 1rem",
         fontWeight: 600,

@@ -34,7 +34,7 @@ export default async function ChangerMotDePassePage({
         alignItems: "center",
         justifyContent: "center",
         padding: "2rem 1.25rem",
-        background: couleurs.fondPage,
+        background: `radial-gradient(circle at 50% -10%, #dfe7f1 0%, ${couleurs.fondPage} 55%)`,
         fontFamily: "var(--font-sans), sans-serif",
         color: couleurs.texte,
       }}
@@ -58,8 +58,8 @@ export default async function ChangerMotDePassePage({
             top: 0,
             left: 0,
             right: 0,
-            height: 6,
-            background: couleurs.primaire,
+            height: 5,
+            background: `linear-gradient(90deg, ${couleurs.primaire}, ${couleurs.accent})`,
           }}
         />
 
