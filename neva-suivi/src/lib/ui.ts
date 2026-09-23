@@ -1,42 +1,44 @@
 import type { CSSProperties } from "react";
 
-// Identité visuelle Neva Energy — palette "bleu vif + corail" (choisie par
-// le client pour aller plus loin que le navy/vert d'origine, extrait du
-// logo). Le navy du logo reste utilisé ailleurs (Logo.tsx, favicon,
-// themeColor) ; cette palette gouverne l'interface elle-même.
-// Objectif cahier inchangé : sobre, très contrasté (lisible en plein soleil
-// sur chantier), zones tactiles généreuses.
+// Identité visuelle Neva Energy — vision "chantier industriel haute
+// visibilité" (demandée par le client comme refonte complète, en rupture
+// avec les versions précédentes bleu/corail à ombres douces) : noir + ambre
+// sécurité, blocs plats, bordures franches, aucune ombre ni dégradé. Objectif
+// cahier inchangé, et ici pris au pied de la lettre : sobre, très contrasté
+// (lisible en plein soleil sur chantier), zones tactiles généreuses — le
+// noir/ambre est littéralement la palette de la signalétique de chantier.
 export const couleurs = {
-  texte: "#14161a",
-  texteAttenue: "#40454c",
+  texte: "#0a0a0a",
+  texteAttenue: "#3a3a3a",
   fond: "#ffffff",
-  // Fond de page (derrière les cartes/champs, qui eux restent en `fond`
-  // blanc pour se détacher) : un gris légèrement bleuté pour accompagner le
-  // bleu vif plutôt qu'un gris neutre qui le ferait jurer.
-  fondPage: "#eef1f7",
-  primaire: "#2a5fd6",
-  // Pôle sombre du dégradé de marque (boutons, en-têtes) — jamais utilisée
-  // seule comme couleur de texte, uniquement en dégradé avec `primaire`.
-  primaireProfond: "#15275f",
-  primaireTexte: "#ffffff",
-  // Corail : deux variantes délibérément différentes. `accent` (vif) sert de
-  // fond/liseré décoratif ; sur blanc il ne contraste qu'à ~2.8:1, donc
-  // jamais comme texte. `accentTexte` (assombri, ~5:1 sur blanc) porte le
-  // même corail partout où il faut du texte ou un contour lisible
-  // (bouton secondaire, liens) — un seul assombrissement calculé une fois
-  // ici plutôt que deux teintes choisies "à l'œil" qui dériveraient.
-  accent: "#ff6b57",
-  accentTexte: "#c73f2e",
-  accentFond: "#fff1ee",
-  bordure: "#8f96a1",
-  // Séparateur discret (cartes, entêtes de section) : plus doux que
-  // `bordure`, qui reste réservée aux contours de champs/actions.
-  bordureDouce: "#e1e4e8",
-  erreur: "#b3001b",
-  erreurFond: "#fdecee",
+  // Gris chaud très clair, pas un blanc pur ni un gris froid : accompagne
+  // l'ambre sans l'affadir.
+  fondPage: "#f2f1ec",
+  primaire: "#f5a300",
+  // Ambre plus sombre : hover/press (inversion simple, pas d'ombre), jamais
+  // comme couleur de texte.
+  primaireProfond: "#c98400",
+  // Texte NOIR sur fond ambre, pas blanc : c'est le principe même de la
+  // signalétique haute visibilité (contraste max, jamais l'inverse).
+  primaireTexte: "#0a0a0a",
+  // Le noir est l'accent structurel de ce thème (bordures, liserés, bandes)
+  // — remplace le corail des versions précédentes.
+  accent: "#0a0a0a",
+  accentTexte: "#0a0a0a",
+  accentFond: "#fff4dc",
+  // Bordures franches, toutes noires : c'est la signature visuelle de ce
+  // thème, pas une bordure "douce" nuancée par endroit (cf. bordureDouce
+  // plus bas, gardée identique à `bordure` pour ne rien laisser de gris
+  // discret se glisser dans un thème qui se veut net partout).
+  bordure: "#0a0a0a",
+  bordureDouce: "#0a0a0a",
+  erreur: "#c1121f",
+  erreurFond: "#fde8e8",
   succes: "#0a7a3d",
   succesFond: "#e9f7ee",
-  avertissement: "#8a5a00",
+  // Même ambre que `primaire` : cohérent avec la signalétique hazard, où
+  // "avertissement" et "action" partagent la même couleur.
+  avertissement: "#a86b00",
   avertissementFond: "#fff4dc",
 } as const;
 
@@ -45,34 +47,33 @@ export const couleurs = {
 // des gants ou des doigts mouillés sur chantier.
 export const TAILLE_TACTILE_MIN = 48;
 
+// Coins presque droits (2-4px, jamais arrondis) : c'est le contraire des
+// versions précédentes, volontairement — la netteté fait partie de la
+// vision "signalétique chantier", pas un oubli.
 export const rayon = {
-  petit: 8,
-  // Dédié aux boutons (demande explicite : "rectangle arrondi, coins 12px"),
-  // distinct de `moyen` (cartes) pour que les deux puissent évoluer
-  // indépendamment.
-  bouton: 12,
-  moyen: 14,
-  grand: 20,
+  petit: 2,
+  bouton: 2,
+  moyen: 3,
+  grand: 4,
 } as const;
 
-// Ombres teintées navy (pas un gris neutre générique) à faible opacité :
-// lisibles en plein soleil sans jamais paraître sales ou salissantes sur
-// fond clair.
+// Aucune ombre dans ce thème (demande explicite : "aucune ombre, aucun
+// dégradé, tout est plat et net"). Les tokens restent définis à "none"
+// plutôt que supprimés : tout le code existant qui les référence
+// (styleCarte, boutons, en-têtes) devient plat automatiquement, sans avoir
+// à toucher chaque fichier un par un.
 export const ombre = {
-  legere: "0 1px 2px rgba(12, 37, 81, 0.08)",
-  moyenne: "0 8px 20px -6px rgba(12, 37, 81, 0.18)",
-  boutonPrimaire: "0 6px 16px -4px rgba(21, 39, 95, 0.4)",
-  // Ombre réduite pour l'état "pressé" (globals.css) : simule le bouton qui
-  // s'enfonce dans la surface plutôt que de simplement s'assombrir.
-  boutonPresse: "0 2px 6px -2px rgba(21, 39, 95, 0.35)",
+  legere: "none",
+  moyenne: "none",
+  boutonPrimaire: "none",
+  boutonPresse: "none",
 } as const;
 
-// Carte générique (sections du tableau de bord, blocs de formulaire) :
-// centralisée ici pour que tout le monde ait la même élévation plutôt que
-// des bordures plates ad hoc page par page.
+// Carte générique : bordure noire franche, coins presque droits, aucune
+// ombre — le relief vient de la bordure épaisse, pas d'une élévation.
 export const styleCarte: CSSProperties = {
   background: couleurs.fond,
-  border: `1px solid ${couleurs.bordureDouce}`,
+  border: `2.5px solid ${couleurs.bordureDouce}`,
   borderRadius: rayon.moyen,
   boxShadow: ombre.moyenne,
 };
@@ -82,7 +83,7 @@ export const styleChamp: CSSProperties = {
   padding: "0.85rem",
   minHeight: TAILLE_TACTILE_MIN,
   borderRadius: rayon.petit,
-  border: `1.5px solid ${couleurs.bordure}`,
+  border: `2px solid ${couleurs.bordure}`,
   color: couleurs.texte,
   background: couleurs.fond,
   width: "100%",
@@ -92,32 +93,38 @@ export const styleChamp: CSSProperties = {
   userSelect: "text",
 };
 
-// Rectangle arrondi (12px) plutôt qu'une pilule : reste net et "pro" plutôt
-// qu'un style tout-arrondi. Dégradé bleu vif -> bleu profond + ombre
-// marquée pour un effet de relief "pressable" (globals.css gère
-// l'enfoncement au clic via boutonPresse).
+// Bloc ambre plein, texte noir, bordure noire épaisse — pas de dégradé, pas
+// d'ombre : la troisième dimension vient uniquement de la bordure, comme un
+// panneau de signalisation. Majuscules + Oswald (via fontFamily) pour l'effet
+// "signalétique" (cf. layout.tsx pour le chargement de la police).
 export const styleBoutonPrimaire: CSSProperties = {
-  fontSize: "1.15rem",
+  fontFamily: "var(--font-display), sans-serif",
+  fontSize: "1.1rem",
   fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.03em",
   padding: "1rem",
   minHeight: 52,
   borderRadius: rayon.bouton,
-  border: "none",
-  background: `linear-gradient(155deg, ${couleurs.primaire}, ${couleurs.primaireProfond})`,
+  border: `3px solid ${couleurs.texte}`,
+  background: couleurs.primaire,
   color: couleurs.primaireTexte,
   boxShadow: ombre.boutonPrimaire,
 };
 
-// Contour + texte corail (accentTexte, pas accent — voir plus haut) : les
-// actions secondaires se distinguent maintenant par la couleur, pas
-// seulement par le remplissage, sans jamais tomber sous 4.5:1 sur blanc.
+// Même famille (bordure noire épaisse, coins presque droits), fond blanc
+// au lieu d'ambre : la hiérarchie action principale/secondaire vient du
+// remplissage, pas de la couleur de bordure (toujours noire dans ce thème).
 export const styleBoutonSecondaire: CSSProperties = {
-  fontSize: "1rem",
-  fontWeight: 600,
+  fontFamily: "var(--font-display), sans-serif",
+  fontSize: "0.95rem",
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.02em",
   padding: "0.75rem 1.1rem",
   minHeight: TAILLE_TACTILE_MIN,
   borderRadius: rayon.bouton,
-  border: `1.5px solid ${couleurs.accentTexte}`,
+  border: `2.5px solid ${couleurs.accentTexte}`,
   background: couleurs.fond,
   color: couleurs.accentTexte,
   boxShadow: ombre.legere,

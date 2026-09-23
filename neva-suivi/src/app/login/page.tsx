@@ -33,10 +33,10 @@ export default async function LoginPage({
         alignItems: "center",
         justifyContent: "center",
         padding: "2rem 1.25rem",
-        // Fond doux en dégradé radial, pas un simple aplat : donne de la
-        // profondeur à l'écran d'accueil sans nuire au contraste du contenu,
-        // qui reste sur la carte blanche par-dessus.
-        background: `radial-gradient(circle at 50% -10%, #dfe7f1 0%, ${couleurs.fondPage} 55%)`,
+        // Aplat plat, pas de dégradé (vision "chantier industriel" : aucun
+        // dégradé nulle part) — le relief vient de la bordure noire de la
+        // carte, pas d'un fond travaillé.
+        background: couleurs.fondPage,
         fontFamily: "var(--font-sans), sans-serif",
         color: couleurs.texte,
         WebkitUserSelect: "none",
@@ -55,9 +55,9 @@ export default async function LoginPage({
           position: "relative",
         }}
       >
-        {/* Liseré de marque en haut de carte : seule touche de couleur forte
-            de l'écran, pour signer sans alourdir (cahier : sobre, très
-            contrasté). */}
+        {/* Bande ambre pleine en haut de carte — pas un dégradé — seule
+            touche de couleur de l'écran, pour signer sans alourdir (cahier :
+            sobre, très contrasté). */}
         <div
           aria-hidden
           style={{
@@ -65,8 +65,8 @@ export default async function LoginPage({
             top: 0,
             left: 0,
             right: 0,
-            height: 5,
-            background: `linear-gradient(90deg, ${couleurs.primaire}, ${couleurs.accent})`,
+            height: 6,
+            background: couleurs.primaire,
           }}
         />
 
@@ -126,8 +126,9 @@ export default async function LoginPage({
             style={{
               cursor: "pointer",
               fontSize: "0.9rem",
-              color: couleurs.primaire,
-              fontWeight: 600,
+              color: couleurs.texte,
+              fontWeight: 700,
+              textDecoration: "underline",
               userSelect: "none",
             }}
           >

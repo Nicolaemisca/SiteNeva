@@ -246,12 +246,12 @@ export default async function HistoriquePage({
 
       <div
         style={{
-          background: `linear-gradient(155deg, ${couleurs.primaire}, ${couleurs.primaireProfond})`,
+          background: couleurs.primaire,
           color: couleurs.primaireTexte,
+          border: `2.5px solid ${couleurs.texte}`,
           borderRadius: rayon.moyen,
           padding: "0.85rem 1rem",
           marginBottom: "1.5rem",
-          boxShadow: ombre.legere,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "baseline",

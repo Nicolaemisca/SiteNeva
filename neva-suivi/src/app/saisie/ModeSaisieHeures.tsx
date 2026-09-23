@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
-import { couleurs, styleChamp, TAILLE_TACTILE_MIN } from "@/lib/ui";
+import { couleurs, rayon, styleChamp, TAILLE_TACTILE_MIN } from "@/lib/ui";
 import { dictionnaires, type Langue } from "@/lib/i18n/dictionnaires";
 
 // Presets de saisie rapide (cahier : priorité absolue à la rapidité sur
@@ -126,11 +126,13 @@ const styleBoutonMode = (actif: boolean): CSSProperties => ({
   flex: 1,
   minHeight: 40,
   fontSize: "0.85rem",
-  fontWeight: 600,
-  borderRadius: 8,
-  border: actif ? `2px solid ${couleurs.primaire}` : `1.5px solid ${couleurs.bordure}`,
-  background: actif ? "#eaf1f8" : couleurs.fond,
-  color: couleurs.texte,
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.02em",
+  borderRadius: rayon.bouton,
+  border: `2px solid ${couleurs.bordure}`,
+  background: actif ? couleurs.primaire : couleurs.fond,
+  color: actif ? couleurs.primaireTexte : couleurs.texte,
 });
 
 // Le serveur recalcule et valide toujours ce total à partir de
@@ -209,10 +211,10 @@ export function ModeSaisieHeures({
                   style={{
                     flex: "1 1 3.5rem",
                     minHeight: TAILLE_TACTILE_MIN,
-                    fontSize: "1.05rem",
-                    fontWeight: 600,
-                    borderRadius: 8,
-                    border: selectionne ? `2px solid ${couleurs.primaire}` : `1.5px solid ${couleurs.bordure}`,
+                    fontSize: "1.1rem",
+                    fontWeight: 700,
+                    borderRadius: rayon.bouton,
+                    border: `2px solid ${couleurs.bordure}`,
                     background: selectionne ? couleurs.primaire : couleurs.fond,
                     color: selectionne ? couleurs.primaireTexte : couleurs.texte,
                   }}

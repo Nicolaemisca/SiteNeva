@@ -35,7 +35,7 @@ export default async function ReinitialiserMotDePassePage({
         alignItems: "center",
         justifyContent: "center",
         padding: "2rem 1.25rem",
-        background: `radial-gradient(circle at 50% -10%, #dfe7f1 0%, ${couleurs.fondPage} 55%)`,
+        background: couleurs.fondPage,
         fontFamily: "var(--font-sans), sans-serif",
         color: couleurs.texte,
       }}
@@ -59,8 +59,8 @@ export default async function ReinitialiserMotDePassePage({
             top: 0,
             left: 0,
             right: 0,
-            height: 5,
-            background: `linear-gradient(90deg, ${couleurs.primaire}, ${couleurs.accent})`,
+            height: 6,
+            background: couleurs.primaire,
           }}
         />
 
