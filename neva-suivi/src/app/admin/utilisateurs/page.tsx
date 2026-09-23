@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   creerUtilisateur,
   basculerActivation,
+  definirTarifHoraire,
   reinitialiserMotDePasse,
   supprimerUtilisateur,
 } from "@/app/actions/utilisateurs";
@@ -43,12 +44,13 @@ export default async function UtilisateursAdminPage({
   const params = await searchParams;
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("users")
-    .select("id, nom, email, role, actif")
-    .order("nom");
+  const [{ data, error }, { data: tarifs }] = await Promise.all([
+    supabase.from("users").select("id, nom, email, role, actif").order("nom"),
+    supabase.from("tarifs_horaires").select("user_id, tarif_horaire"),
+  ]);
 
   const utilisateurs = (data ?? []) as Utilisateur[];
+  const tarifParUtilisateur = new Map((tarifs ?? []).map((t) => [t.user_id as string, Number(t.tarif_horaire)]));
   const utilisateurAConfirmer = params.confirmer_suppression
     ? utilisateurs.find((u) => u.id === params.confirmer_suppression)
     : null;
@@ -85,6 +87,22 @@ export default async function UtilisateursAdminPage({
           }}
         >
           Statut du compte mis à jour.
+        </p>
+      )}
+
+      {params.tarif_maj && (
+        <p
+          style={{
+            color: couleurs.succes,
+            background: couleurs.succesFond,
+            border: `1.5px solid ${couleurs.succes}`,
+            borderRadius: 8,
+            padding: "0.75rem",
+            marginTop: "1rem",
+            fontWeight: 600,
+          }}
+        >
+          Tarif horaire mis à jour.
         </p>
       )}
 
@@ -241,6 +259,7 @@ export default async function UtilisateursAdminPage({
               <th style={styleTh}>Email</th>
               <th style={styleTh}>Rôle</th>
               <th style={styleTh}>Statut</th>
+              <th style={styleTh}>Tarif horaire (€/h)</th>
               <th style={styleTh} />
             </tr>
           </thead>
@@ -264,6 +283,24 @@ export default async function UtilisateursAdminPage({
                   >
                     {u.actif ? "Actif" : "Désactivé"}
                   </span>
+                </td>
+                <td style={styleTd}>
+                  <form action={definirTarifHoraire} style={{ display: "flex", gap: "0.35rem" }}>
+                    <input type="hidden" name="id" value={u.id} />
+                    <input
+                      name="tarif_horaire"
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      min="0"
+                      defaultValue={tarifParUtilisateur.get(u.id) ?? ""}
+                      placeholder="Non défini"
+                      style={{ ...styleChamp, minHeight: 36, padding: "0.35rem", width: 110, fontSize: "0.85rem" }}
+                    />
+                    <button type="submit" style={styleBoutonMini}>
+                      OK
+                    </button>
+                  </form>
                 </td>
                 <td style={styleTd}>
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
@@ -293,7 +330,7 @@ export default async function UtilisateursAdminPage({
             ))}
             {utilisateurs.length === 0 && (
               <tr>
-                <td style={styleTd} colSpan={5}>
+                <td style={styleTd} colSpan={6}>
                   Aucun compte.
                 </td>
               </tr>

@@ -8,6 +8,8 @@ type LigneSaisie = {
   heures: number | string;
   description: string | null;
   materiel: string | null;
+  chantier_id: string;
+  user_id: string;
   chantiers: { nom: string } | null;
   users: { nom: string } | null;
 };
@@ -28,7 +30,7 @@ export async function GET(request: NextRequest) {
 
   let requete = supabase
     .from("saisies")
-    .select("id, date, heures, description, materiel, chantiers(nom), users(nom)")
+    .select("id, date, heures, description, materiel, chantier_id, user_id, chantiers(nom), users(nom)")
     .order("date", { ascending: false });
 
   if (chantierId) requete = requete.eq("chantier_id", chantierId);
@@ -45,32 +47,92 @@ export async function GET(request: NextRequest) {
 
   const saisies = (data ?? []) as unknown as LigneSaisie[];
 
+  // Tarif horaire admin-only (cahier consigne 17, migration 0010) : lu ici
+  // uniquement pour calculer le montant à facturer, jamais exposé côté
+  // technicien — cette route est déjà protégée par requireAdmin() plus haut.
+  const { data: tarifs } = await supabase.from("tarifs_horaires").select("user_id, tarif_horaire");
+  const tarifParUtilisateur = new Map((tarifs ?? []).map((t) => [t.user_id as string, Number(t.tarif_horaire)]));
+
+  function montant(s: LigneSaisie): number | null {
+    const tarif = tarifParUtilisateur.get(s.user_id);
+    return tarif != null ? Number(s.heures) * tarif : null;
+  }
+
   const classeur = new ExcelJS.Workbook();
-  const feuille = classeur.addWorksheet("Saisies");
-  feuille.columns = [
+
+  const feuilleDetail = classeur.addWorksheet("Saisies");
+  feuilleDetail.columns = [
     { header: "Date", key: "date", width: 12 },
     { header: "Chantier", key: "chantier", width: 28 },
     { header: "Personne", key: "personne", width: 22 },
     { header: "Heures", key: "heures", width: 10 },
+    { header: "Tarif (€/h)", key: "tarif", width: 12 },
+    { header: "Montant (€)", key: "montant", width: 12 },
     { header: "Description", key: "description", width: 40 },
     { header: "Matériel", key: "materiel", width: 30 },
   ];
-  feuille.getRow(1).font = { bold: true };
+  feuilleDetail.getRow(1).font = { bold: true };
 
   for (const s of saisies) {
-    feuille.addRow({
+    feuilleDetail.addRow({
       date: s.date,
       chantier: s.chantiers?.nom ?? "",
       personne: s.users?.nom ?? "",
       heures: Number(s.heures),
+      tarif: tarifParUtilisateur.get(s.user_id) ?? "",
+      montant: montant(s) ?? "",
       description: s.description ?? "",
       materiel: s.materiel ?? "",
     });
   }
 
   const totalHeures = saisies.reduce((somme, s) => somme + Number(s.heures), 0);
-  const ligneTotal = feuille.addRow({ chantier: "Total", heures: totalHeures });
-  ligneTotal.font = { bold: true };
+  const totalMontant = saisies.reduce((somme, s) => somme + (montant(s) ?? 0), 0);
+  const ligneTotalDetail = feuilleDetail.addRow({ chantier: "Total", heures: totalHeures, montant: totalMontant });
+  ligneTotalDetail.font = { bold: true };
+
+  // Récapitulatif par personne et par chantier (cahier consigne 17) :
+  // c'est ce tableau, pas le détail ligne à ligne, qui part tel quel au
+  // client pour accord de facturation.
+  type CleGroupe = string; // `${chantier_id}::${user_id}`
+  const groupes = new Map<CleGroupe, { chantierNom: string; personneNom: string; heures: number; montant: number | null }>();
+
+  for (const s of saisies) {
+    const cle: CleGroupe = `${s.chantier_id}::${s.user_id}`;
+    const existant = groupes.get(cle);
+    const montantLigne = montant(s);
+    groupes.set(cle, {
+      chantierNom: s.chantiers?.nom ?? "",
+      personneNom: s.users?.nom ?? "",
+      heures: (existant?.heures ?? 0) + Number(s.heures),
+      montant: montantLigne == null ? existant?.montant ?? null : (existant?.montant ?? 0) + montantLigne,
+    });
+  }
+
+  const lignesRecap = [...groupes.values()].sort(
+    (a, b) => a.chantierNom.localeCompare(b.chantierNom) || a.personneNom.localeCompare(b.personneNom)
+  );
+
+  const feuilleRecap = classeur.addWorksheet("Récapitulatif facturation");
+  feuilleRecap.columns = [
+    { header: "Chantier", key: "chantier", width: 28 },
+    { header: "Personne", key: "personne", width: 22 },
+    { header: "Heures", key: "heures", width: 10 },
+    { header: "Montant (€)", key: "montant", width: 14 },
+  ];
+  feuilleRecap.getRow(1).font = { bold: true };
+
+  for (const ligne of lignesRecap) {
+    feuilleRecap.addRow({
+      chantier: ligne.chantierNom,
+      personne: ligne.personneNom,
+      heures: ligne.heures,
+      montant: ligne.montant ?? "Tarif non défini",
+    });
+  }
+
+  const ligneTotalRecap = feuilleRecap.addRow({ chantier: "Total", heures: totalHeures, montant: totalMontant });
+  ligneTotalRecap.font = { bold: true };
 
   const buffer = await classeur.xlsx.writeBuffer();
 
