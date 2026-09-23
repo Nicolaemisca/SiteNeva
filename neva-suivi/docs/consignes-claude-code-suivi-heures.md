@@ -194,6 +194,59 @@ se supprime pas, il se désactive.
 
 ---
 
+## 15. Pointage personnel pour calcul automatique des heures
+
+Contexte : tu passes sur plusieurs chantiers par jour et tu n'as jamais le temps
+de calculer tes propres heures. Une appli web ne peut pas suivre la position en
+tâche de fond, écran éteint — c'est bloqué par iOS et Android, pas par choix.
+Solution : un pointage volontaire à chaque arrivée, réservé à ton compte.
+
+> Ajoute un mode « pointage » réservé au compte admin : à chaque arrivée sur un
+> chantier, un geste enregistre l'heure et la position. En fin de journée, calcule
+> automatiquement la durée passée sur chaque chantier à partir des pointages
+> successifs et propose un récapitulatif à vérifier avant enregistrement.
+
+---
+
+## 16. Calendrier de présence dans le tableau de bord
+
+Contexte : repérer en un coup d'œil un jour où un technicien a oublié d'encoder,
+sans devoir ouvrir le tableau des saisies.
+
+> Ajoute sur le dashboard un petit calendrier mensuel où chaque jour affiche un
+> point par saisie enregistrée ce jour-là, une couleur différente par utilisateur.
+> Un jour avec moins de points que le nombre habituel d'utilisateurs actifs doit
+> être visuellement repérable en un coup d'œil. Cliquer sur un jour ouvre le détail
+> des saisies de cette date.
+
+---
+
+## 17. Tarif horaire par personne et export pour accord de facturation
+
+Contexte : circuit de facturation actuel — export des heures par personne et par
+chantier, montant calculé au tarif horaire propre à chacun, envoyé au client pour
+accord, puis facturation en forfait dans Odoo. Le tarif horaire n'existe nulle
+part dans l'appli aujourd'hui.
+
+> Ajoute un tarif horaire par utilisateur, modifiable et visible uniquement par
+> l'admin — jamais côté technicien, y compris sur son propre profil. Dans l'export,
+> calcule automatiquement le montant total par personne et par chantier en plus des
+> heures, pour obtenir directement le document à envoyer au client pour accord de
+> facturation.
+
+---
+
+## 18. Heures totales par chantier dans le tableau de bord
+
+Contexte : voir où va le temps, chantier par chantier, sans devoir filtrer le
+tableau des saisies à chaque fois.
+
+> Ajoute dans le back-office une vue « heures par chantier » sur le tableau de
+> bord : total d'heures cumulées pour chaque chantier actif, avec répartition par
+> technicien.
+
+---
+
 ## Points restés en suspens
 
 - Révoquer l'ancienne clé secret Supabase nommée « default », une fois la nouvelle
